@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">SprintOAlert</string>
+    <string name="release">Release</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="bugs">Bugs</string>
+    <string name="day">Day</string>
+    <string name="stories">Stories</string>
+    <string name="open">open</string>
+    <string name="in_testing">in testing</string>
+    <string name="done">done</string>
+    <string name="sent_to_client">Sent to Client</string>
+</resources>
