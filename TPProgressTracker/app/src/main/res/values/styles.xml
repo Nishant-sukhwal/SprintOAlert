@@ -3,13 +3,17 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <!--<items name="colorPrimary">@color/primary</items>-->
+        <!--<items name="colorPrimaryDark">@color/primary_dark</items>-->
+        <!--<items name="colorAccent">@color/accent</items>-->
     </style>
     <!-- for tablayout text in ImagePicker tablayout-->
-    <style name="TabViewTextAppearance" parent="TextAppearance.Design.Tab">
-        <item name="android:textSize">13sp</item>
-        <item name="android:textColor">@android:color/white</item>
-    </style>
+    <!--<style name="TabViewTextAppearance" parent="TextAppearance.Design.Tab">-->
+        <!--<items name="android:textSize">13sp</items>-->
+        <!--<items name="android:textColor">@android:color/white</items>-->
+    <!--</style>-->
+    <!--<style name="MyCheckBox" parent="Theme.AppCompat.Light">-->
+        <!--<items name="colorControlNormal">@color/primary</items>-->
+        <!--<items name="colorControlActivated">@color/primary_dark</items>-->
+    <!--</style>-->
 </resources>

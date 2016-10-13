@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -24,6 +25,9 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
 
     Context m_context;
     ArrayList<SprintInfo> m_SprintInfo;
+    MyClickListener myClickListener;
+    public static final int PARENT_ITEM = 0;
+    public static final int CHILD_ITEM = 1;
 
     public TodayListAdapter(Context context, ArrayList<SprintInfo> sprintInfoArrayList) {
         super();
@@ -100,18 +104,21 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
 
         if (m_SprintInfo.get(position).getSprintStartDate() != null && m_SprintInfo.get(position).getSprintStartDate() > 0) {
             Date date = new Date(m_SprintInfo.get(position).getSprintStartDate());
-            Format format = new SimpleDateFormat("dd MM yyyy");
+            Format format = new SimpleDateFormat("dd/MM/yyyy");
             holder.txtStartDate.setText(format.format(date));
         } else {
             holder.txtStartDate.setText(null);
         }
         if (m_SprintInfo.get(position).getSprintEndDate() != null && m_SprintInfo.get(position).getSprintEndDate() > 0) {
             Date date = new Date(m_SprintInfo.get(position).getSprintEndDate());
-            Format format = new SimpleDateFormat("dd MM yyyy");
+            Format format = new SimpleDateFormat("dd/MM/yyyy");
             holder.txtEndDate.setText(format.format(date));
         } else {
             holder.txtEndDate.setText(null);
         }
+        holder.imgSendMail.setTag(m_SprintInfo.get(position));
+        holder.imgToDo.setTag(m_SprintInfo.get(position));
+        holder.imgEscalate.setTag(m_SprintInfo.get(position));
         holder.cvTodayLayout.setTag(m_SprintInfo.get(position));
 
         //holder.cvTodayLayout.setCardBackgroundColor(m_SprintInfo.get(position).getCardBackgroundColor());
@@ -122,15 +129,20 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
         return m_SprintInfo.size();
     }
 
-    public class TodayListViewHolder extends RecyclerView.ViewHolder {
+    public void setOnItemClickListener(MyClickListener myClickListener) {
+        this.myClickListener = myClickListener;
+    }
+
+    public class TodayListViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         TextView txtProjectName, txtSprintName, txtStoriesCount, txtStoriesOpenCount, txtBugCount, txtBugOpenCount, txtCurrentDay, txtStartDate, txtEndDate;
         TextView txtStoriesInProgressCount, txtStoriesDone;
         TextView txtBugsInTesting, txtBugsDone, txtTotalDaysOfSprint;
-        LinearLayout layoutStoryOpenGraph, layoutStoryInProgressGraph, layoutStoryDoneGraph;
+        LinearLayout layoutStoryOpenGraph, layoutStoryInProgressGraph, layoutStoryDoneGraph, layoutSprintData;
         LinearLayout layoutBugsOpenGraph, layoutBugsInTestingGraph, layoutBugsDoneGraph;
         LinearLayout layoutOverallOpenGraph, layoutOverallInTestingGraph, layoutOverallDoneGraph;
         CardView cvTodayLayout;
+        ImageView imgSendMail, imgToDo, imgEscalate;
 
         public TodayListViewHolder(View itemView) {
             super(itemView);
@@ -160,6 +172,23 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
             layoutOverallOpenGraph = (LinearLayout) itemView.findViewById(R.id.layoutOverallOpenGraph);
             layoutOverallInTestingGraph = (LinearLayout) itemView.findViewById(R.id.layoutOverallInTestingGraph);
             layoutOverallDoneGraph = (LinearLayout) itemView.findViewById(R.id.layoutOverallDoneGraph);
+
+            //layoutSprintData = (LinearLayout) itemView.findViewById(R.id.layoutSprintData);
+            imgSendMail = (ImageView) itemView.findViewById(R.id.imgSendMail);
+            imgToDo = (ImageView) itemView.findViewById(R.id.imgToDo);
+            imgEscalate = (ImageView) itemView.findViewById(R.id.imgEscalate);
+            imgSendMail.setOnClickListener(this);
+            imgToDo.setOnClickListener(this);
+            imgEscalate.setOnClickListener(this);
         }
+
+        @Override
+        public void onClick(View view) {
+            myClickListener.onItemClick(getAdapterPosition(), view);
+        }
+    }
+
+    public interface MyClickListener {
+        public void onItemClick(int position, View v);
     }
 }

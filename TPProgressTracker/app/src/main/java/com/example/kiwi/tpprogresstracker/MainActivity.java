@@ -1,5 +1,6 @@
 package com.example.kiwi.tpprogresstracker;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.design.widget.Snackbar;
@@ -13,6 +14,7 @@ import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.kiwi.tpprogresstracker.httpmanager.apihandler;
@@ -33,24 +35,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button btnLogin;
     JSONArray jarray = null;
     public static final String MyPreference = "MyPrefs";
+    private ProgressDialog m_ProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initViews();
-
         setListeners();
+        SharedPreferences sharedPreferences = getSharedPreferences(MyPreference, MODE_PRIVATE);
+        String mToken = sharedPreferences.getString("token", null);
+        if (mToken != null && !mToken.isEmpty()) {
+            startActivity(new Intent(this, Dashboard.class));
+            this.finish();
+        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        SharedPreferences sharedPreferences = getSharedPreferences(MyPreference, MODE_PRIVATE);
-        String mToken = sharedPreferences.getString("token", null);
-        if (mToken != null && !mToken.isEmpty()) {
-            startActivity(new Intent(this, Dashboard.class));
-        }
+
     }
 
     private void initViews() {
@@ -113,6 +117,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
+        m_ProgressBar = new ProgressDialog(this, ProgressDialog.STYLE_SPINNER);
+        m_ProgressBar.setCancelable(false);
+        m_ProgressBar.setMessage("Please wait...");
+        m_ProgressBar.show();
         if (txtEmail.getText().toString().isEmpty()) {
             showSnackbarMessageBox("Email address cannot be empty.");
             txtEmail.requestFocus();
@@ -146,11 +154,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             JSONObject obj = new JSONObject(json);
             String token = obj.getString("Token");
             Log.d("Login Activity : ", "onSuccess: " + token);
-            showMessageBox("Login Successfull.");
+            //showMessageBox("Login Successfull.");
             SharedPreferences.Editor editor = getSharedPreferences(MyPreference, MODE_PRIVATE).edit();
             editor.putString("token", token);
             editor.commit();
             if (!token.isEmpty()) {
+                m_ProgressBar.cancel();
                 startActivity(new Intent(this, Dashboard.class));
             }
 //            authenticationResponse result = (authenticationResponse) obj;

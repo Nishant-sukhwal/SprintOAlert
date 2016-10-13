@@ -49,7 +49,7 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
         setSupportActionBar(mToolbar);
 
         todayFragment = new TodayFragment();
-        getSupportFragmentManager().beginTransaction().replace(R.id.flContainer, todayFragment).commit();
+        getSupportFragmentManager().beginTransaction().add(R.id.flContainer, todayFragment).commit();
 //        pagerAdapter = new DashboardPagerAdapter(getSupportFragmentManager(), this);
 //        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 //            @Override
@@ -76,6 +76,7 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
         HashMap<String, String> params = new HashMap<>();
         params.put("take", "1000");
         params.put("where", "(isActive eq 'true')");
+        ProjectInfo.listProjectInfo.clear();
         apihandler.getInstance().callAPI("fetchProjects", null, mToken, params, this);
     }
 
@@ -85,24 +86,6 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
         //viewPager = (ViewPager) findViewById(R.id.viewPagerImagePicker);
         flContainer = (FrameLayout) findViewById(R.id.flContainer);
     }
-
-    final int TODAY_FRAGMENT = 0;
-    final int CW_FRAGMENT = 1;
-    final int NW_FRAGMENT = 2;
-
-    public Fragment getFragment(int typeOfFragment) {
-        Fragment fragment = null;
-        switch (typeOfFragment) {
-            case TODAY_FRAGMENT:
-                for (Fragment tempFragment : pagerAdapter.getAllFragments()) {
-                    if (tempFragment instanceof TodayFragment) {
-                        fragment = tempFragment;
-                    }
-                }
-        }
-        return fragment;
-    }
-
 
     @Override
     public void onSuccess(String url, String requestId, Response response) {
@@ -123,12 +106,7 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
                     params.put("where", "(IsCurrent eq 'true')");
                     params.put("append", "[UserStories-Count,Bugs-Count]");
                     apihandler.getInstance().callAPI("Iterations", null, mToken, params, this);
-
-//                    Fragment tempFragment = getFragment(TODAY_FRAGMENT);
-//                    if (tempFragment != null) {
-                    //TodayFragment todayFragment = new TodayFragment(); // (TodayFragment) tempFragment;
-                    todayFragment.doWork();
-//                    }
+//                    todayFragment.doWork();
                 }
             }
         } else if (url.equals("Release")) {
@@ -163,14 +141,34 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
                                 projItem.setStoriesCount(item.getUserStoriesCount());
                                 if (item.getStartDate() != null) {
                                     projItem.setSprintStartDate(Long.valueOf(item.getStartDate().split("/Date")[1].split("-")[0].substring(1)));
-                                    int days = getDays(projItem.getSprintStartDate(), System.currentTimeMillis());
-                                    projItem.setCurrentDay(String.valueOf(days));
+                                    //int days = getDays(projItem.getSprintStartDate(), System.currentTimeMillis());
+                                    Calendar cal1 = toCalendar(projItem.getSprintStartDate());
+                                    Calendar cal2 = toCalendar(System.currentTimeMillis());
+                                    int numberOfDays = 0;
+                                    while (cal1.before(cal2)) {
+                                        if ((Calendar.SATURDAY != cal1.get(Calendar.DAY_OF_WEEK))
+                                                && (Calendar.SUNDAY != cal1.get(Calendar.DAY_OF_WEEK))) {
+                                            numberOfDays++;
+                                        }
+                                        cal1.add(Calendar.DATE, 1);
+                                    }
+                                    projItem.setCurrentDay(String.valueOf(numberOfDays));
                                 }
                                 if (item.getEndDate() != null) {
                                     projItem.setSprintEndDate(Long.valueOf(item.getEndDate().split("/Date")[1].split("-")[0].substring(1)));
                                 }
-                                int daysOfSprint = getDays(projItem.getSprintStartDate(), projItem.getSprintEndDate());
-                                String totalDaysOfSprint = "/" + String.valueOf(daysOfSprint);
+
+                                Calendar cal1 = toCalendar(projItem.getSprintStartDate());
+                                Calendar cal2 = toCalendar(projItem.getSprintEndDate());
+                                int numberOfDays = 0;
+                                while (cal1.before(cal2)) {
+                                    if ((Calendar.SATURDAY != cal1.get(Calendar.DAY_OF_WEEK))
+                                            && (Calendar.SUNDAY != cal1.get(Calendar.DAY_OF_WEEK))) {
+                                        numberOfDays++;
+                                    }
+                                    cal1.add(Calendar.DATE, 1);
+                                }
+                                String totalDaysOfSprint = "/" + String.valueOf(numberOfDays);
                                 projItem.setTotalDaysOfSprint(totalDaysOfSprint);
 
                                 HashMap<String, String> storiesParams = new HashMap<>();
@@ -199,6 +197,9 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
             Log.d("User Story Activity", "onSuccess: " + result);
             if (result.getItems().size() == 0) {
                 for (SprintInfo tempStoryItem : ProjectInfo.getInstance().getProjectList()) {
+                    if (tempStoryItem.getSprintId() == null) {
+                        tempStoryItem.setSprintId("");
+                    }
                     if (tempStoryItem.getSprintId().equals(requestId)) {
                         tempStoryItem.setCardBackgroundColor(Color.parseColor("#E64A19"));
                     }
@@ -321,13 +322,7 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
                 }
             }
         }
-
-
-//        Fragment tempFragment = getFragment(TODAY_FRAGMENT);
-//        if (tempFragment != null) {
-        //TodayFragment todayFragment = new TodayFragment(); // (TodayFragment) tempFragment;
         todayFragment.doWork();
-//        }
     }
 
     private int getDays(long startDate, long endDate) {
@@ -352,10 +347,10 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
     private Calendar toCalendar(long timestamp) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(timestamp);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
+//        calendar.set(Calendar.HOUR_OF_DAY, 0);
+//        calendar.set(Calendar.MINUTE, 0);
+//        calendar.set(Calendar.SECOND, 0);
+//        calendar.set(Calendar.MILLISECOND, 0);
         return calendar;
     }
 }

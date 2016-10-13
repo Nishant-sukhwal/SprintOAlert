@@ -11,4 +11,5 @@
     <string name="in_testing">in testing</string>
     <string name="done">done</string>
     <string name="sent_to_client">Sent to Client</string>
+    <string name="escalate">escalate</string>
 </resources>

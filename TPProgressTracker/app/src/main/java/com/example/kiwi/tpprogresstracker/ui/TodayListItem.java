@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import com.example.kiwi.tpprogresstracker.R;
 
-public class TodayListItem extends AppCompatActivity {
+public class    TodayListItem extends AppCompatActivity {
 
     TextView txtProjectName, txtSprintName, txtStoriesCount, txtStoriesNotDoneCount, txtBugCount, txtBugNotDoneCount,txtCurrentDay;
 

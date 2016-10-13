@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:id="@+id/txtCurrentDay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/completeBtn"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/todoToolbar"
+        android:layout_toLeftOf="@+id/completeBtn"
+        android:background="@drawable/rounded_corner_black_box"
+        android:paddingBottom="@dimen/margin_tiny"
+        android:paddingLeft="@dimen/margin_medium"
+        android:paddingRight="@dimen/margin_medium"
+        android:paddingTop="@dimen/margin_tiny"
+        android:layout_marginTop="@dimen/margin_small"
+        android:layout_marginBottom="@dimen/margin_tiny"
+        android:text="day 1"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/margin_medium" />
+</LinearLayout>
