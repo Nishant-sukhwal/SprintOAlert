@@ -81,6 +81,9 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
         lpOpenBugs.weight = fBugsOpenGraph;
         holder.layoutBugsOpenGraph.setLayoutParams(lpOpenBugs);
         float fBugsInTestingGraph = (m_SprintInfo.get(position).getBugsInTesting()) / Float.parseFloat(m_SprintInfo.get(position).getBugsCount());
+        if (m_SprintInfo.get(position).getBugsInTesting() == 0 && Float.parseFloat(m_SprintInfo.get(position).getBugsCount()) == 0) {
+            fBugsInTestingGraph = 0;
+        }
         LinearLayout.LayoutParams lpBugsInTestingGraph = new LinearLayout.LayoutParams(0, 100);
         lpBugsInTestingGraph.weight = fBugsInTestingGraph;
         holder.layoutBugsInTestingGraph.setLayoutParams(lpBugsInTestingGraph);

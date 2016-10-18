@@ -1,18 +1,12 @@
 package com.example.kiwi.tpprogresstracker.fragment;
 
 
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,7 +14,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ImageView;
 
 import com.example.kiwi.tpprogresstracker.R;
@@ -31,7 +24,6 @@ import com.example.kiwi.tpprogresstracker.ui.ToDOList;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -82,7 +74,11 @@ public class TodayFragment extends Fragment {
                     emailIntent1.setType("image/*");
                     startActivityForResult(Intent.createChooser(emailIntent1, "Send Image"), 100);
                 } else if (v.getId() == R.id.imgToDo) {
-                    startActivity(new Intent(getActivity(), ToDOList.class));
+                    SprintInfo info = (SprintInfo) v.getTag();
+                    Intent intent = new Intent(getActivity(), ToDOList.class);
+                    intent.putExtra("day", info.getCurrentDay());
+                    intent.putExtra("project_id", info.getProjectId());
+                    startActivity(intent);
 
                 } else if (v.getId() == R.id.imgEscalate) {
 

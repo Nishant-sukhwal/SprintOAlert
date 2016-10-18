@@ -1,7 +1,6 @@
 package com.example.kiwi.tpprogresstracker.model;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by kiwi on 10/10/2016.
@@ -9,7 +8,8 @@ import java.util.List;
 
 public class ActionItemInfo {
     private static ActionItemInfo instance = new ActionItemInfo();
-    public static ArrayList<ActionItems> actionItems = new ArrayList<>();
+    public static ArrayList<InnerActionItems> actionItems = new ArrayList<>();
+    public static ArrayList<ListItem> actionListItems = new ArrayList<>();
 
     public static ActionItemInfo getInstance() {
         if (instance == null) {
@@ -22,7 +22,11 @@ public class ActionItemInfo {
 
     }
 
-    public ArrayList<ActionItems> getActionItems() {
+    public ArrayList<InnerActionItems> getActionItems() {
         return actionItems;
+    }
+
+    public ArrayList<ListItem> getActionListItems() {
+        return actionListItems;
     }
 }

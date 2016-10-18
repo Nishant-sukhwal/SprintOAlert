@@ -3,9 +3,9 @@ package com.example.kiwi.tpprogresstracker;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
@@ -14,7 +14,6 @@ import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.kiwi.tpprogresstracker.httpmanager.apihandler;
@@ -161,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (!token.isEmpty()) {
                 m_ProgressBar.cancel();
                 startActivity(new Intent(this, Dashboard.class));
+                finish();
             }
 //            authenticationResponse result = (authenticationResponse) obj;
         } catch (IOException e) {
