@@ -134,20 +134,20 @@
                 android:background="@android:color/darker_gray" />
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/activity_horizontal_margin"
+                    android:layout_marginBottom="@dimen/margin_small"
                     android:layout_marginLeft="@dimen/activity_horizontal_margin"
                     android:text="@string/stories"
                     android:textSize="@dimen/margin_medium" />
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/margin_tiny"
                     android:layout_marginRight="@dimen/margin_tiny"
@@ -156,9 +156,25 @@
 
                 <TextView
                     android:id="@+id/txtStoriesCount"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="@dimen/margin_medium_medium" />
+                    android:textSize="@dimen/margin_medium" />
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/txtStoriesProgress"
+                    android:textStyle="italic"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/margin_small_medium" />
+
+                <View
+                    android:layout_width="30dp"
+                    android:layout_height="1dp" />
             </LinearLayout>
 
             <LinearLayout
@@ -287,20 +303,20 @@
                 android:background="@android:color/darker_gray" />
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/activity_horizontal_margin"
+                    android:layout_marginBottom="@dimen/margin_small"
                     android:layout_marginLeft="@dimen/activity_horizontal_margin"
                     android:text="@string/bugs"
                     android:textSize="@dimen/margin_medium" />
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/margin_tiny"
                     android:layout_marginRight="@dimen/margin_tiny"
@@ -309,9 +325,24 @@
 
                 <TextView
                     android:id="@+id/txtBugsCount"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="@dimen/margin_medium_medium" />
+                    android:textSize="@dimen/margin_medium" />
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/txtBugsProgress"
+                    android:textStyle="italic"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/margin_small_medium" />
+
+                <View
+                    android:layout_width="30dp"
+                    android:layout_height="1dp" />
             </LinearLayout>
 
             <LinearLayout
@@ -399,6 +430,7 @@
                 android:layout_height="@dimen/margin_small"
                 android:layout_marginLeft="@dimen/margin_small"
                 android:layout_marginRight="@dimen/margin_small"
+                android:layout_marginTop="@dimen/margin_small"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -492,13 +524,13 @@
                 android:background="@android:color/darker_gray" />
         </LinearLayout>
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
             <CheckBox
-                android:id="@+id/checkBox"
+                android:id="@+id/checkBoxSentToClient"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/activity_horizontal_margin"
@@ -508,18 +540,23 @@
                 android:text="Sent to Client :"
                 android:textColor="#757575"
                 android:textSize="@dimen/margin_medium_medium"
-                />
+
+                android:visibility="visible" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
 
             <ImageView
-                android:id="@+id/imgSendMail"
-                android:layout_alignParentEnd="true"
+                android:id="@+id/imgEscalate"
                 style="@android:style/Widget.Holo.Button.Borderless"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:layout_gravity="right|center_vertical"
                 android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="2dp"
-                android:src="@mipmap/share" />
+                android:src="@mipmap/escalate64"
+                android:visibility="visible" />
 
             <ImageView
                 android:id="@+id/imgToDo"
@@ -529,19 +566,20 @@
                 android:layout_gravity="right|center_vertical"
                 android:layout_marginRight="@dimen/activity_horizontal_margin"
                 android:layout_marginTop="2dp"
-                android:layout_toLeftOf="@id/imgSendMail"
                 android:src="@mipmap/todo" />
 
             <ImageView
-                android:id="@+id/imgEscalate"
+                android:id="@+id/imgSendMail"
                 style="@android:style/Widget.Holo.Button.Borderless"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:layout_gravity="right|center_vertical"
                 android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:layout_toLeftOf="@id/imgToDo"
-                android:src="@mipmap/escalate64" />
-        </RelativeLayout>
+                android:layout_marginTop="2dp"
+                android:src="@mipmap/share" />
+
+
+        </LinearLayout>
 
         <!--<Button-->
         <!--android:id="@+id/btnEscalate"-->

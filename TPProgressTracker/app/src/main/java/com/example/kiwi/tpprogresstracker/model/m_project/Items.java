@@ -83,6 +83,18 @@ public class Items {
     @SerializedName("Bugs-Count")
     private String BugsCount;
 
+    @SerializedName("UserStories-TimeSpent-Sum")
+    private String UserStoriesSpentTime;
+
+    @SerializedName("UserStories-Effort-Sum")
+    private String UserStoriesTotalEffort;
+
+    @SerializedName("Bugs-TimeSpent-Sum")
+    private String BugsSpentTime;
+
+    @SerializedName("Bugs-Effort-Sum")
+    private String BugsTotalEffort;
+
     public String getPlannedStartDate() {
         return PlannedStartDate;
     }
@@ -377,5 +389,37 @@ public class Items {
 
     public void setBugsCount(String bugsCount) {
         BugsCount = bugsCount;
+    }
+
+    public String getUserStoriesSpentTime() {
+        return UserStoriesSpentTime;
+    }
+
+    public void setUserStoriesSpentTime(String userStoriesSpentTime) {
+        UserStoriesSpentTime = userStoriesSpentTime;
+    }
+
+    public String getUserStoriesTotalEffort() {
+        return UserStoriesTotalEffort;
+    }
+
+    public void setUserStoriesTotalEffort(String userStoriesTotalEffort) {
+        UserStoriesTotalEffort = userStoriesTotalEffort;
+    }
+
+    public String getBugsSpentTime() {
+        return BugsSpentTime;
+    }
+
+    public void setBugsSpentTime(String bugsSpentTime) {
+        BugsSpentTime = bugsSpentTime;
+    }
+
+    public String getBugsTotalEffort() {
+        return BugsTotalEffort;
+    }
+
+    public void setBugsTotalEffort(String bugsTotalEffort) {
+        BugsTotalEffort = bugsTotalEffort;
     }
 }

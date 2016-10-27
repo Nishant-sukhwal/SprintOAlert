@@ -5,17 +5,19 @@ package com.example.kiwi.tpprogresstracker.model;
  */
 
 public class InnerActionItems extends ListItem {
-    public InnerActionItems(String id, int day, String item, boolean isCurrent) {
+    public InnerActionItems(String id, int day, String item, boolean isCurrent, String projectID) {
         this.id = id;
         this.day = day;
         this.item = item;
         this.isCurrent = isCurrent;
+        this.projectID = projectID;
     }
 
     private String id;
     private int day;
     private String item;
     private boolean isCurrent;
+    private String projectID;
 
     public int getDay() {
         return day;
@@ -52,5 +54,13 @@ public class InnerActionItems extends ListItem {
 
     public void setCurrent(boolean current) {
         isCurrent = current;
+    }
+
+    public String getProjectID() {
+        return projectID;
+    }
+
+    public void setProjectID(String projectID) {
+        this.projectID = projectID;
     }
 }

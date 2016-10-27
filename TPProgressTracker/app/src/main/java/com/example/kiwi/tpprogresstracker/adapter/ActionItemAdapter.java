@@ -1,7 +1,10 @@
 package com.example.kiwi.tpprogresstracker.adapter;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,12 +14,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.kiwi.tpprogresstracker.R;
+import com.example.kiwi.tpprogresstracker.database.DBManager;
+import com.example.kiwi.tpprogresstracker.database.DBTableStructure;
 import com.example.kiwi.tpprogresstracker.model.HeaderItem;
 import com.example.kiwi.tpprogresstracker.model.InnerActionItems;
 import com.example.kiwi.tpprogresstracker.model.ListItem;
 
 import java.util.ArrayList;
 
+import static android.content.ContentValues.TAG;
 import static com.example.kiwi.tpprogresstracker.R.id.txtActionItem;
 
 /**
@@ -38,19 +44,20 @@ public class ActionItemAdapter extends RecyclerView.Adapter<ActionItemAdapter.Ac
 
     @Override
     public ActionItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Log.d("viewType position", "onCreateViewHolder: " + viewType);
         if (viewType == ListItem.TYPE_HEADER) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_to_do_list_parent, parent, false);
             ParentItem parentItem = new ParentItem(view);
             return parentItem;
         } else {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_to_do_list_child, parent, false);
-            ChildItem childItem = new ChildItem(view);
+            ChildItem childItem = new ChildItem(view, new MyCustomEditTextListener());
             return childItem;
         }
     }
 
     @Override
-    public void onBindViewHolder(ActionItemViewHolder holder, int position) {
+    public void onBindViewHolder(ActionItemViewHolder holder, final int position) {
         if (holder.getItemViewType() == ListItem.TYPE_HEADER) {
             ParentItem v = (ParentItem) holder;
             HeaderItem items = (HeaderItem) m_ActionItems.get(position);
@@ -58,7 +65,7 @@ public class ActionItemAdapter extends RecyclerView.Adapter<ActionItemAdapter.Ac
         } else if (holder.getItemViewType() == ListItem.TYPE_CHILD_ITEM) {
             ChildItem childView = (ChildItem) holder;
             final InnerActionItems items = (InnerActionItems) m_ActionItems.get(position);
-            childView.txtActionItem.setText(items.getItem());
+
             childView.txtActionItem.setTag(position);
             childView.txtActionItem.setTag(txtActionItem, m_ActionItems.get(position));
             if (!items.isCurrent()) {
@@ -71,17 +78,9 @@ public class ActionItemAdapter extends RecyclerView.Adapter<ActionItemAdapter.Ac
                 childView.imgMinus.setVisibility(View.VISIBLE);
             }
             childView.imgMinus.setTag(m_ActionItems.get(position));
-            childView.txtActionItem.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View view, boolean b) {
-                    if (!b) {
-                        final int position = (Integer) view.getTag();
-                        final EditText Caption = (EditText) view;
-                        items.setItem(Caption.getText().toString());
-                        Log.d("After text changed", "afterTextChanged: " + position);
-                    }
-                }
-            });
+            childView.myCustomEditTextListener.updatePosition(holder.getAdapterPosition());
+            childView.txtActionItem.setText(items.getItem());
+            Log.d(TAG, "onBindViewHolder: holder.getAdapterPosition() : " + holder.getAdapterPosition() + " position : " + position);
         }
     }
 
@@ -130,17 +129,58 @@ public class ActionItemAdapter extends RecyclerView.Adapter<ActionItemAdapter.Ac
         EditText txtActionItem;
         View viewSeperator;
         ImageView imgMinus;
+        MyCustomEditTextListener myCustomEditTextListener;
 
-        public ChildItem(final View itemView) {
+        public ChildItem(final View itemView, MyCustomEditTextListener myCustomEditTextListener) {
             super(itemView);
+            this.myCustomEditTextListener = myCustomEditTextListener;
             txtActionItem = (EditText) itemView.findViewById(R.id.txtActionItem);
             viewSeperator = (View) itemView.findViewById(R.id.viewSeperator);
             imgMinus = (ImageView) itemView.findViewById(R.id.imgMinus);
             imgMinus.setOnClickListener(this);
+            txtActionItem.addTextChangedListener(myCustomEditTextListener);
         }
     }
 
     public interface ActionItemClickListener {
         public void onItemClick(int position, View v);
+    }
+
+    private class MyCustomEditTextListener implements TextWatcher {
+        private int position;
+        private boolean isUpdated;
+
+        public void updatePosition(int position) {
+            this.position = position;
+            isUpdated = true;
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+            // no op
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+            if (!isUpdated) {
+                return;
+            }
+            InnerActionItems item = (InnerActionItems) m_ActionItems.get(position);
+            item.setItem(charSequence.toString());
+            Log.d(TAG, "onTextChanged: " + position + "String value : " + charSequence.toString());
+            String itemID = item.getId();
+            String projectID = item.getProjectID();
+            String day = String.valueOf(item.getDay());
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(DBTableStructure.ActionItemsTable.KEY_ITEM, item.getItem());
+            String whereClause = DBTableStructure.ActionItemsTable.KEY_PROJECT_ID + "=? AND " + DBTableStructure.ActionItemsTable.KEY_ITEM_ID + "=? AND " + DBTableStructure.ActionItemsTable.KEY_DAY + "=?";
+            long updated = DBManager.getInstance(m_Context).update(contentValues, whereClause, new String[]{projectID, itemID, day});
+            Log.d(TAG, "onTextChanged: " + item);
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            // no op
+        }
     }
 }

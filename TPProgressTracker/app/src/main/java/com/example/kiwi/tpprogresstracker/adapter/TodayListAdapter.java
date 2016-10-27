@@ -1,18 +1,22 @@
 package com.example.kiwi.tpprogresstracker.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.kiwi.tpprogresstracker.R;
 import com.example.kiwi.tpprogresstracker.model.SprintInfo;
+import com.example.kiwi.tpprogresstracker.ui.ToDOList;
 
+import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,8 +27,8 @@ import java.util.Date;
  */
 public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.TodayListViewHolder> {
 
-    Context m_context;
-    ArrayList<SprintInfo> m_SprintInfo;
+    private Context m_context;
+    private ArrayList<SprintInfo> m_SprintInfo;
     MyClickListener myClickListener;
     public static final int PARENT_ITEM = 0;
     public static final int CHILD_ITEM = 1;
@@ -43,7 +47,7 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
     }
 
     @Override
-    public void onBindViewHolder(TodayListViewHolder holder, int position) {
+    public void onBindViewHolder(TodayListViewHolder holder, final int position) {
         holder.txtProjectName.setText(m_SprintInfo.get(position).getProjectName());
         holder.txtSprintName.setText(m_SprintInfo.get(position).getSprintName());
         holder.txtStoriesCount.setText(m_SprintInfo.get(position).getStoriesCount());
@@ -56,19 +60,52 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
         holder.txtBugsDone.setText(String.valueOf(m_SprintInfo.get(position).getBugsDone()));
         holder.txtCurrentDay.setText(m_SprintInfo.get(position).getCurrentDay());
         holder.txtTotalDaysOfSprint.setText(m_SprintInfo.get(position).getTotalDaysOfSprint());
+        double storiesProgress = m_SprintInfo.get(position).getStoriesSpentTime() / m_SprintInfo.get(position).getStoriesTotalEffort();
+        if (m_SprintInfo.get(position).getStoriesSpentTime() == 0.0 && m_SprintInfo.get(position).getStoriesTotalEffort() == 0.0) {
+            storiesProgress = 0;
+        } else {
+            storiesProgress = storiesProgress * 100;
+            storiesProgress = Double.parseDouble(new DecimalFormat("##.##").format(storiesProgress));
+        }
+        holder.txtStoriesProgress.setText(String.valueOf(storiesProgress) + "%");
+        double bugsProgress = m_SprintInfo.get(position).getBugsSpentTime() / m_SprintInfo.get(position).getBugsTotalEffort();
+        if (m_SprintInfo.get(position).getBugsSpentTime() == 0.0 && m_SprintInfo.get(position).getBugsTotalEffort() == 0.0) {
+            bugsProgress = 0;
+        } else {
+            bugsProgress = bugsProgress * 100;
+            bugsProgress = Double.parseDouble(new DecimalFormat("##.##").format(bugsProgress));
+        }
+        holder.txtBugsProgress.setText(String.valueOf(bugsProgress) + "%");
         if (m_SprintInfo.get(position).getStoriesCount() == null) {
             m_SprintInfo.get(position).setStoriesCount("0");
         }
-
+        if (m_SprintInfo.get(position).getCurrentDay() != null && m_SprintInfo.get(position).getTotalDaysOfSprint() != null) {
+            if (m_SprintInfo.get(position).getCurrentDay().equals(m_SprintInfo.get(position).getTotalDaysOfSprint().replace("/", ""))) {
+                holder.imgEscalate.setVisibility(View.VISIBLE);
+                holder.checkBoxSentToClient.setVisibility(View.VISIBLE);
+            } else {
+                holder.imgEscalate.setVisibility(View.GONE);
+                holder.checkBoxSentToClient.setVisibility(View.GONE);
+            }
+        }
         float fltOpenGraph = (m_SprintInfo.get(position).getStoriesOpen() + m_SprintInfo.get(position).getStoriesInDevelopment() + m_SprintInfo.get(position).getStoriesInDesign()) / Float.parseFloat(m_SprintInfo.get(position).getStoriesCount());
+        if (Double.isNaN(fltOpenGraph)) {
+            fltOpenGraph = 0;
+        }
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, 100);
         lp.weight = fltOpenGraph;
         holder.layoutStoryOpenGraph.setLayoutParams(lp);
         float fltInTestingGraph = (m_SprintInfo.get(position).getStoriesInTesting()) / Float.parseFloat(m_SprintInfo.get(position).getStoriesCount());
+        if (Double.isNaN(fltInTestingGraph)) {
+            fltInTestingGraph = 0;
+        }
         LinearLayout.LayoutParams lpInTestingGraph = new LinearLayout.LayoutParams(0, 100);
         lpInTestingGraph.weight = fltInTestingGraph;
         holder.layoutStoryInProgressGraph.setLayoutParams(lpInTestingGraph);
         float fltStoryDoneGraph = (float) m_SprintInfo.get(position).getStoriesDone() / Float.parseFloat(m_SprintInfo.get(position).getStoriesCount());
+        if (Double.isNaN(fltStoryDoneGraph)) {
+            fltStoryDoneGraph = 0;
+        }
         LinearLayout.LayoutParams lpDoneGraph = new LinearLayout.LayoutParams(0, 100);
         lpDoneGraph.weight = fltStoryDoneGraph;
         holder.layoutStoryDoneGraph.setLayoutParams(lpDoneGraph);
@@ -77,10 +114,16 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
             m_SprintInfo.get(position).setBugsCount("0");
         }
         float fBugsOpenGraph = (m_SprintInfo.get(position).getBugsOpen() + m_SprintInfo.get(position).getBugsInDevelopment()) / Float.parseFloat(m_SprintInfo.get(position).getBugsCount());
+        if (Double.isNaN(fBugsOpenGraph)) {
+            fBugsOpenGraph = 0;
+        }
         LinearLayout.LayoutParams lpOpenBugs = new LinearLayout.LayoutParams(0, 100);
         lpOpenBugs.weight = fBugsOpenGraph;
         holder.layoutBugsOpenGraph.setLayoutParams(lpOpenBugs);
         float fBugsInTestingGraph = (m_SprintInfo.get(position).getBugsInTesting()) / Float.parseFloat(m_SprintInfo.get(position).getBugsCount());
+        if (Double.isNaN(fBugsInTestingGraph)) {
+            fBugsInTestingGraph = 0;
+        }
         if (m_SprintInfo.get(position).getBugsInTesting() == 0 && Float.parseFloat(m_SprintInfo.get(position).getBugsCount()) == 0) {
             fBugsInTestingGraph = 0;
         }
@@ -89,6 +132,9 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
         holder.layoutBugsInTestingGraph.setLayoutParams(lpBugsInTestingGraph);
 
         float fBugsDoneGraph = (float) m_SprintInfo.get(position).getBugsDone() / Float.parseFloat(m_SprintInfo.get(position).getBugsCount());
+        if (Double.isNaN(fBugsDoneGraph)) {
+            fBugsDoneGraph = 0;
+        }
         LinearLayout.LayoutParams lpBugsDoneGraph = new LinearLayout.LayoutParams(0, 100);
         lpBugsDoneGraph.weight = fBugsDoneGraph;
         holder.layoutBugsDoneGraph.setLayoutParams(lpBugsDoneGraph);
@@ -120,7 +166,28 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
             holder.txtEndDate.setText(null);
         }
         holder.imgSendMail.setTag(m_SprintInfo.get(position));
-        holder.imgToDo.setTag(m_SprintInfo.get(position));
+        holder.imgToDo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SprintInfo info = m_SprintInfo.get(position);
+                Intent intent = new Intent(m_context, ToDOList.class);
+                intent.putExtra("day", info.getCurrentDay());
+                intent.putExtra("project_id", info.getProjectId());
+                m_context.startActivity(intent);
+            }
+        });
+        holder.checkBoxSentToClient.setChecked(m_SprintInfo.get(position).isBuildSentToClient());
+        holder.checkBoxSentToClient.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SprintInfo info = m_SprintInfo.get(position);
+                if (((CheckBox) view).isChecked()) {
+                    info.setBuildSentToClient(true);
+                } else {
+                    info.setBuildSentToClient(false);
+                }
+            }
+        });
         holder.imgEscalate.setTag(m_SprintInfo.get(position));
         holder.cvTodayLayout.setTag(m_SprintInfo.get(position));
 
@@ -139,13 +206,14 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
     public class TodayListViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         TextView txtProjectName, txtSprintName, txtStoriesCount, txtStoriesOpenCount, txtBugCount, txtBugOpenCount, txtCurrentDay, txtStartDate, txtEndDate;
-        TextView txtStoriesInProgressCount, txtStoriesDone;
+        TextView txtStoriesInProgressCount, txtStoriesDone, txtStoriesProgress, txtBugsProgress;
         TextView txtBugsInTesting, txtBugsDone, txtTotalDaysOfSprint;
         LinearLayout layoutStoryOpenGraph, layoutStoryInProgressGraph, layoutStoryDoneGraph, layoutSprintData;
         LinearLayout layoutBugsOpenGraph, layoutBugsInTestingGraph, layoutBugsDoneGraph;
         LinearLayout layoutOverallOpenGraph, layoutOverallInTestingGraph, layoutOverallDoneGraph;
         CardView cvTodayLayout;
         ImageView imgSendMail, imgToDo, imgEscalate;
+        CheckBox checkBoxSentToClient;
 
         public TodayListViewHolder(View itemView) {
             super(itemView);
@@ -163,6 +231,9 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
             txtTotalDaysOfSprint = (TextView) itemView.findViewById(R.id.txtTotalDaysOfSprint);
             txtStartDate = (TextView) itemView.findViewById(R.id.txtStartDate);
             txtEndDate = (TextView) itemView.findViewById(R.id.txtEndDate);
+            txtStoriesProgress = (TextView) itemView.findViewById(R.id.txtStoriesProgress);
+            txtBugsProgress = (TextView) itemView.findViewById(R.id.txtBugsProgress);
+
             cvTodayLayout = (CardView) itemView.findViewById(R.id.cvTodayLayout);
             layoutStoryOpenGraph = (LinearLayout) itemView.findViewById(R.id.layoutStoryOpenGraph);
             layoutStoryInProgressGraph = (LinearLayout) itemView.findViewById(R.id.layoutStoryInProgressGraph);
@@ -183,6 +254,8 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
             imgSendMail.setOnClickListener(this);
             imgToDo.setOnClickListener(this);
             imgEscalate.setOnClickListener(this);
+
+            checkBoxSentToClient = (CheckBox) itemView.findViewById(R.id.checkBoxSentToClient);
         }
 
         @Override

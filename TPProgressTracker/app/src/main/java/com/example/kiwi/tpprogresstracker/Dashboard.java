@@ -1,19 +1,17 @@
 package com.example.kiwi.tpprogresstracker;
 
+import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.widget.FrameLayout;
 
 import com.example.kiwi.tpprogresstracker.adapter.DashboardPagerAdapter;
-
+import com.example.kiwi.tpprogresstracker.callback.OnRefreshProject;
 import com.example.kiwi.tpprogresstracker.classes.ProjectInfo;
 import com.example.kiwi.tpprogresstracker.fragment.TodayFragment;
 import com.example.kiwi.tpprogresstracker.httpmanager.apihandler;
@@ -31,7 +29,7 @@ import java.util.Iterator;
 
 import retrofit2.Response;
 
-public class Dashboard extends AppCompatActivity implements internalCallback {
+public class Dashboard extends AppCompatActivity implements internalCallback, OnRefreshProject {
 
     Toolbar mToolbar;
     ViewPager viewPager;
@@ -40,6 +38,7 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
     private DashboardPagerAdapter pagerAdapter;
     FrameLayout flContainer;
     TodayFragment todayFragment;
+    private ProgressDialog m_ProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,28 +48,12 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
         setSupportActionBar(mToolbar);
 
         todayFragment = new TodayFragment();
+        todayFragment.setSwipeRefreshListener(this);
         getSupportFragmentManager().beginTransaction().add(R.id.flContainer, todayFragment).commit();
-//        pagerAdapter = new DashboardPagerAdapter(getSupportFragmentManager(), this);
-//        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-//            @Override
-//            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-//
-//            }
-//
-//            @Override
-//            public void onPageSelected(int position) {
-//
-//            }
-//
-//            @Override
-//            public void onPageScrollStateChanged(int state) {
-//
-//            }
-//        });
-//        viewPager.setAdapter(pagerAdapter);
+        onRefreshList();
+    }
 
-//        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabLayoutImagePicker);
-//        tabLayout.setupWithViewPager(viewPager);
+    private void fetchProjects() {
         SharedPreferences sharedPreferences = getSharedPreferences(MyPreference, MODE_PRIVATE);
         mToken = sharedPreferences.getString("token", null);
         HashMap<String, String> params = new HashMap<>();
@@ -91,8 +74,11 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
     public void onSuccess(String url, String requestId, Response response) {
         if (url.equals("Projects")) {
             Project projectResponse = (Project) response.body();
+            if (projectResponse.getItems().length == 0) {
+                m_ProgressBar.dismiss();
+            }
             for (Items item : projectResponse.getItems()) {
-                if (item.getIsActive() == true) {
+                if (item.getIsActive()) {
                     String id = item.getId();
                     String projectName = item.getName();//.split("/")[1];
                     SprintInfo sprintInfo = new SprintInfo();
@@ -104,9 +90,8 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
                     params.put("include", "[Id,Name,StartDate,EndDate,IsCurrent,Release,Project]");
                     params.put("take", "1000");
                     params.put("where", "(IsCurrent eq 'true')");
-                    params.put("append", "[UserStories-Count,Bugs-Count]");
+                    params.put("append", "[UserStories-Count,Bugs-Count,UserStories-TimeSpent-Sum,UserStories-Effort-Sum,Bugs-TimeSpent-Sum,Bugs-Effort-Sum]");
                     apihandler.getInstance().callAPI("Iterations", null, mToken, params, this);
-//                    todayFragment.doWork();
                 }
             }
         } else if (url.equals("Release")) {
@@ -116,6 +101,7 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
             //RESPONSE TO GET ITERATIONS
             Iterations iterations = (Iterations) response.body();
             if (iterations.getItems().length == 0) {
+                m_ProgressBar.dismiss();
                 Iterator<SprintInfo> tempList = ProjectInfo.getInstance().getProjectList().iterator();
                 while (tempList.hasNext()) {
                     SprintInfo info = tempList.next();
@@ -125,7 +111,7 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
                 }
             }
             for (Items item : iterations.getItems()) {
-                if (item.isCurrent() == true) {
+                if (item.isCurrent()) {
                     // CHECK WEATHER SPRINT PROJECT ID IS EXIST IN LIST OR NOT
                     for (SprintInfo projItem : ProjectInfo.getInstance().getProjectList()) {
                         if (item.getProject() != null) {
@@ -139,6 +125,10 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
                                 }
                                 projItem.setBugsCount(item.getBugsCount());
                                 projItem.setStoriesCount(item.getUserStoriesCount());
+                                projItem.setStoriesSpentTime(Double.parseDouble(item.getUserStoriesSpentTime()));
+                                projItem.setBugsSpentTime(Double.parseDouble(item.getBugsSpentTime()));
+                                projItem.setStoriesTotalEffort(Double.parseDouble(item.getUserStoriesTotalEffort()));
+                                projItem.setBugsTotalEffort(Double.parseDouble(item.getBugsTotalEffort()));
                                 if (item.getStartDate() != null) {
                                     projItem.setSprintStartDate(Long.valueOf(item.getStartDate().split("/Date")[1].split("-")[0].substring(1)));
                                     //int days = getDays(projItem.getSprintStartDate(), System.currentTimeMillis());
@@ -196,6 +186,7 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
             UserStories result = (UserStories) response.body();
             Log.d("User Story Activity", "onSuccess: " + result);
             if (result.getItems().size() == 0) {
+                m_ProgressBar.dismiss();
                 for (SprintInfo tempStoryItem : ProjectInfo.getInstance().getProjectList()) {
                     if (tempStoryItem.getSprintId() == null) {
                         tempStoryItem.setSprintId("");
@@ -276,6 +267,7 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
         } else if (url.equals("Bugs")) {
             StoryBugs result = (StoryBugs) response.body();
             if (result.getItems().size() == 0) {
+                m_ProgressBar.dismiss();
                 for (SprintInfo tempStoryItem : ProjectInfo.getInstance().getProjectList()) {
                     if (tempStoryItem.getBugsOpen() == 0) {
                         tempStoryItem.setBugsOpen(0);
@@ -320,6 +312,7 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
                         }
                     }
                 }
+                m_ProgressBar.dismiss();
             }
         }
         todayFragment.doWork();
@@ -352,5 +345,14 @@ public class Dashboard extends AppCompatActivity implements internalCallback {
 //        calendar.set(Calendar.SECOND, 0);
 //        calendar.set(Calendar.MILLISECOND, 0);
         return calendar;
+    }
+
+    @Override
+    public void onRefreshList() {
+        m_ProgressBar = new ProgressDialog(this, ProgressDialog.STYLE_SPINNER);
+        m_ProgressBar.setCancelable(false);
+        m_ProgressBar.setMessage("Please wait...");
+        m_ProgressBar.show();
+        fetchProjects();
     }
 }

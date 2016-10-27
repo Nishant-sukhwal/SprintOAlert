@@ -27,6 +27,11 @@ public class SprintInfo {
     private String CurrentDay;
     private String TotalDaysOfSprint;
     private int CardBackgroundColor;
+    private boolean BuildSentToClient;
+    private double StoriesSpentTime;
+    private double StoriesTotalEffort;
+    private double BugsSpentTime;
+    private double BugsTotalEffort;
 
     public String getProjectId() {
         return ProjectId;
@@ -210,5 +215,45 @@ public class SprintInfo {
 
     public void setTotalDaysOfSprint(String totalDaysOfSprint) {
         TotalDaysOfSprint = totalDaysOfSprint;
+    }
+
+    public boolean isBuildSentToClient() {
+        return BuildSentToClient;
+    }
+
+    public void setBuildSentToClient(boolean buildSentToClient) {
+        BuildSentToClient = buildSentToClient;
+    }
+
+    public double getStoriesSpentTime() {
+        return StoriesSpentTime;
+    }
+
+    public void setStoriesSpentTime(double storiesSpentTime) {
+        StoriesSpentTime = storiesSpentTime;
+    }
+
+    public double getStoriesTotalEffort() {
+        return StoriesTotalEffort;
+    }
+
+    public void setStoriesTotalEffort(double storiesTotalEffort) {
+        StoriesTotalEffort = storiesTotalEffort;
+    }
+
+    public double getBugsSpentTime() {
+        return BugsSpentTime;
+    }
+
+    public void setBugsSpentTime(double bugsSpentTime) {
+        BugsSpentTime = bugsSpentTime;
+    }
+
+    public double getBugsTotalEffort() {
+        return BugsTotalEffort;
+    }
+
+    public void setBugsTotalEffort(double bugsTotalEffort) {
+        BugsTotalEffort = bugsTotalEffort;
     }
 }

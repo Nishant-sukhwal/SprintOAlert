@@ -33,6 +33,20 @@ public final class DBManager {
         return inserted;
     }
 
+    public long update(ContentValues values, String selection, String[] selectionArgs) {
+        SQLiteDatabase sqlDB = mDBHelper.getWritableDatabase();
+        long updated = 0;
+        updated = sqlDB.update(DBTableStructure.ActionItemsTable.TABLE_NAME, values, selection, selectionArgs);
+        return updated;
+    }
+
+    public long delete(String selection, String[] selectionArgs) {
+        SQLiteDatabase sqlDB = mDBHelper.getWritableDatabase();
+        long deleted = 0;
+        deleted = sqlDB.delete(DBTableStructure.ActionItemsTable.TABLE_NAME, selection, selectionArgs);
+        return deleted;
+    }
+
     public Cursor fetchData(String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy) {
         try {
             Cursor cursor = null;
