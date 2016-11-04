@@ -1,11 +1,21 @@
 package com.example.kiwi.tpprogresstracker;
 
+import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.widget.FrameLayout;
@@ -22,6 +32,7 @@ import com.example.kiwi.tpprogresstracker.model.iteration.Iterations;
 import com.example.kiwi.tpprogresstracker.model.m_project.Items;
 import com.example.kiwi.tpprogresstracker.model.m_project.Project;
 import com.example.kiwi.tpprogresstracker.model.stories.UserStories;
+import com.example.kiwi.tpprogresstracker.receiver.NotificationPublisher;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -39,6 +50,8 @@ public class Dashboard extends AppCompatActivity implements internalCallback, On
     FrameLayout flContainer;
     TodayFragment todayFragment;
     private ProgressDialog m_ProgressBar;
+    NotificationManager manager;
+    Notification myNotication;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,11 +59,94 @@ public class Dashboard extends AppCompatActivity implements internalCallback, On
         setContentView(R.layout.activity_dashboard);
         initViews();
         setSupportActionBar(mToolbar);
+        scheduleNotification(getNotification(), 20000);
+//        AlarmManager alarmMgr;
+//        alarmMgr = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+//
+//        manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//        Intent intent = new Intent("com.rj.notitfications.SECACTIVITY");
+//
+//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 1, intent, 0);
+//
+//        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+//        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+//        inboxStyle.setBigContentTitle("SprintOAlert");
+//        //inboxStyle.setSummaryText("(line.length) getBigText()");
+//        inboxStyle.addLine("day : 10");
+//        inboxStyle.addLine("Bugs not done: 8/15");
+//        inboxStyle.addLine("stories not done: 10/20");
+//        builder.setAutoCancel(true);
+//        builder.setSmallIcon(R.mipmap.kiwi_logo);
+//        builder.setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//            builder.setStyle(inboxStyle);
+//        }
+//        builder.setContentIntent(pendingIntent);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//            builder.setPriority(Notification.PRIORITY_HIGH);
+//        }
+//        builder.setOngoing(true);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//            builder.build();
+//        }
+//// Set the alarm to start at 8:30 a.m.
+//        Calendar calendar = Calendar.getInstance();
+//        calendar.setTimeInMillis(System.currentTimeMillis());
+//        calendar.set(Calendar.HOUR_OF_DAY, 6);
+//        calendar.set(Calendar.MINUTE, 26);
+//        alarmMgr.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
+//                1000 * 20, pendingIntent);
+//        myNotication = builder.getNotification();
+//        manager.notify(11, myNotication);
 
         todayFragment = new TodayFragment();
         todayFragment.setSwipeRefreshListener(this);
         getSupportFragmentManager().beginTransaction().add(R.id.flContainer, todayFragment).commit();
         onRefreshList();
+    }
+
+    @SuppressLint("ShortAlarm")
+    private void scheduleNotification(Notification notification, int delay) {
+
+        Intent notificationIntent = new Intent(this, NotificationPublisher.class);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, 1);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        long futureInMillis = SystemClock.elapsedRealtime() + delay;
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime(), 1000 * 10, pendingIntent);
+    }
+
+    private Notification getNotification() {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+        inboxStyle.setBigContentTitle("SprintOAlert");
+        //inboxStyle.setSummaryText("(line.length) getBigText()");
+        inboxStyle.addLine("day : 10");
+        inboxStyle.addLine("Bugs not done: 8/15");
+        inboxStyle.addLine("stories not done: 10/20");
+        builder.setAutoCancel(true);
+        builder.setSmallIcon(R.mipmap.kiwi_logo);
+        builder.setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            builder.setStyle(inboxStyle);
+        }
+//        builder.setContentIntent(pendingIntent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            builder.setPriority(Notification.PRIORITY_HIGH);
+        }
+//        builder.setOngoing(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            builder.build();
+        }
+
+//        Notification.Builder builder = new Notification.Builder(this);
+//        builder.setContentTitle("Scheduled Notification");
+//        builder.setContentText(content);
+//        builder.setSmallIcon(R.drawable.ic_launcher);
+        return builder.build();
     }
 
     private void fetchProjects() {

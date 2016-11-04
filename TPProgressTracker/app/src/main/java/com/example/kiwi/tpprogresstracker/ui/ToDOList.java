@@ -7,7 +7,6 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -57,11 +56,29 @@ public class ToDOList extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                 //Click action
-                ListItem listItem = actionListItems.get(actionListItems.size() - 1);
+                int index = 0;
+                for (int i = 1; i < actionListItems.size(); i++) {
+                    ListItem listItem = actionListItems.get(i);
+                    if (listItem.getType() == ListItem.TYPE_HEADER) {
+                        index = i;
+                        break;
+                    }
+                }
+                //Click action
+                ListItem listItem;
+                if (index == 0) {
+                    listItem = actionListItems.get(actionListItems.size() - 1);
+                } else {
+                    listItem = actionListItems.get(index - 1);
+                }
                 if (listItem.getType() == ListItem.TYPE_CHILD_ITEM && !((InnerActionItems) listItem).getItem().equals("")) {
                     InnerActionItems innerItems = new InnerActionItems(String.valueOf(Integer.parseInt(((InnerActionItems) listItem).getId()) + 1), ((InnerActionItems) listItem).getDay(), "", true, projectID);
-                    actionListItems.add(innerItems);
+                    if (index == 0) {
+                        actionListItems.add(innerItems);
+                    } else {
+                        actionListItems.add(index, innerItems);
+                    }
+                    view.requestFocus();
                     ContentValues contentValues = new ContentValues();
                     contentValues.put(DBTableStructure.ActionItemsTable.KEY_DAY, ((InnerActionItems) listItem).getDay());
                     contentValues.put(DBTableStructure.ActionItemsTable.KEY_ITEM_ID, String.valueOf(Integer.parseInt(((InnerActionItems) listItem).getId()) + 1));
@@ -74,7 +91,11 @@ public class ToDOList extends AppCompatActivity {
                     //showSnackbarMessageBox("Please fill the previous note.");
                 }
                 actionItemAdapter.notifyDataSetChanged();
-                rvActionItem.getLayoutManager().scrollToPosition(actionListItems.size() - 1);
+                if (index == 0) {
+                    rvActionItem.getLayoutManager().scrollToPosition(actionListItems.size() - 1);
+                } else {
+                    rvActionItem.getLayoutManager().scrollToPosition(index - 1);
+                }
             }
         });
     }
@@ -165,9 +186,24 @@ public class ToDOList extends AppCompatActivity {
                         String whereClause = DBTableStructure.ActionItemsTable.KEY_PROJECT_ID + "=? AND " + DBTableStructure.ActionItemsTable.KEY_ITEM_ID + "=? AND " + DBTableStructure.ActionItemsTable.KEY_DAY + "=?";
                         long deleted = DBManager.getInstance(getApplicationContext()).delete(whereClause, new String[]{projectID, itemID, String.valueOf(day)});
                         ListItem listItem = actionListItems.get(position - 1);
-                        if (listItem.getType() == ListItem.TYPE_HEADER && position == actionListItems.size() - 1) {
+//                        boolean hasOneChild = false;
+//                        if (actionListItems.size() >= 2 && actionListItems.get(2).getType() == ListItem.TYPE_HEADER))
+//                        {
+//                            hasOneChild = true;
+//                        }
+                        int count = 0;
+                        for (int i = 1; i < actionListItems.size(); i++) {
+                            ListItem result = actionListItems.get(i);
+                            if (result.getType() == ListItem.TYPE_CHILD_ITEM) {
+                                count = count + 1;
+                            } else {
+                                break;
+                            }
+                        }
+                        actionListItems.remove(position);
+                        if (listItem.getType() == ListItem.TYPE_HEADER && count == 1) {
                             InnerActionItems innerItems = new InnerActionItems("1", ((HeaderItem) listItem).getDay(), "", true, projectID);
-                            actionListItems.add(innerItems);
+                            actionListItems.add(1, innerItems);
                             ContentValues contentValues = new ContentValues();
                             contentValues.put(DBTableStructure.ActionItemsTable.KEY_DAY, day);
                             contentValues.put(DBTableStructure.ActionItemsTable.KEY_ITEM_ID, "1");
@@ -177,7 +213,6 @@ public class ToDOList extends AppCompatActivity {
                             contentValues.put(DBTableStructure.ActionItemsTable.KEY_ITEM_TYPE, ListItem.TYPE_CHILD_ITEM);
                             long isInserted = DBManager.getInstance(getApplicationContext()).insert(contentValues);
                         }
-                        actionListItems.remove(position);
                         actionItemAdapter.notifyDataSetChanged();
                     }
                 }
@@ -187,7 +222,13 @@ public class ToDOList extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            rvActionItem.getLayoutManager().scrollToPosition(actionListItems.size() - 1);
+            for (int i = 1; i < actionListItems.size(); i++) {
+                ListItem listItem = actionListItems.get(i);
+                if (listItem.getType() == ListItem.TYPE_HEADER) {
+                    rvActionItem.getLayoutManager().scrollToPosition(i - 1);
+                    break;
+                }
+            }
             actionItemAdapter.notifyDataSetChanged();
             rvActionItem.setClickable(true);
             m_ProgressBar.dismiss();
@@ -210,7 +251,7 @@ public class ToDOList extends AppCompatActivity {
     }
 
     private Map<Integer, List<InnerActionItems>> groupDataIntoHashMap(ArrayList<InnerActionItems> listOfPojosOfJsonArray) {
-        Map<Integer, List<InnerActionItems>> groupedHashMap = new TreeMap<Integer, List<InnerActionItems>>();
+        Map<Integer, List<InnerActionItems>> groupedHashMap = new TreeMap<Integer, List<InnerActionItems>>(Collections.<Integer>reverseOrder());
         for (InnerActionItems items : listOfPojosOfJsonArray) {
             int day = items.getDay();
             if (groupedHashMap.containsKey(day)) {
@@ -227,15 +268,15 @@ public class ToDOList extends AppCompatActivity {
         return groupedHashMap;
     }
 
-    static <K,V extends Comparable<? super V>>
-    List<Map.Entry<K, V>> entriesSortedByValues(Map<K,V> map) {
+    static <K, V extends Comparable<? super V>>
+    List<Map.Entry<K, V>> entriesSortedByValues(Map<K, V> map) {
 
-        List<Map.Entry<K,V>> sortedEntries = new ArrayList<Map.Entry<K,V>>(map.entrySet());
+        List<Map.Entry<K, V>> sortedEntries = new ArrayList<Map.Entry<K, V>>(map.entrySet());
 
         Collections.sort(sortedEntries,
-                new Comparator<Map.Entry<K,V>>() {
+                new Comparator<Map.Entry<K, V>>() {
                     @Override
-                    public int compare(Map.Entry<K,V> e1, Map.Entry<K,V> e2) {
+                    public int compare(Map.Entry<K, V> e1, Map.Entry<K, V> e2) {
                         return e2.getValue().compareTo(e1.getValue());
                     }
                 }
@@ -243,9 +284,4 @@ public class ToDOList extends AppCompatActivity {
 
         return sortedEntries;
     }
-
-    private void showSnackbarMessageBox(String message) {
-        Snackbar.make(findViewById(R.id.activity_to_dolist), message, Snackbar.LENGTH_SHORT).show();
-    }
-
 }

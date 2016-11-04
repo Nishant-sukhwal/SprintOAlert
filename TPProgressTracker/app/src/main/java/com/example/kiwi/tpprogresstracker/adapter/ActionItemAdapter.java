@@ -84,6 +84,87 @@ public class ActionItemAdapter extends RecyclerView.Adapter<ActionItemAdapter.Ac
         }
     }
 
+    private void createLocalNotification(Context context)
+    {
+//        Intent notificationIntent = new Intent(context,
+//                ReminderListActivity.class);
+//
+//
+//
+//        notificationIntent.putExtra("clicked", "Notification Clicked");
+//        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+//                | Intent.FLAG_ACTIVITY_SINGLE_TOP); // To open only one activity
+//
+//
+//        // Invoking the default notification service
+//
+//        NotificationManager mNotificationManager;
+//        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
+//                context);
+//        Uri uri = RingtoneManager
+//                .getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+//        mBuilder.setContentTitle("Reminder");
+//        mBuilder.setContentText("You have new Reminders.");
+//        mBuilder.setTicker("New Reminder Alert!");
+//        mBuilder.setSound(uri);
+//        mBuilder.setAutoCancel(true);
+//
+//        // Add Big View Specific Configuration
+//        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+//        String[] events = null;
+//
+//        events[0] = new String("Your first line text ");
+//        events[1] = new String(" Your second line text");
+//
+//
+//
+//        // Sets a title for the Inbox style big view
+//        inboxStyle.setBigContentTitle("You have Reminders:");
+//
+//        // Moves events into the big view
+//        for (int i = 0; i < events.length; i++) {
+//            inboxStyle.addLine(events[i]);
+//        }
+//
+//        mBuilder.setStyle(inboxStyle);
+//
+//        // Creates an explicit intent for an Activity in your app
+//        Intent resultIntent = new Intent(context,
+//                ReminderListActivity.class);
+//
+//        TaskStackBuilder stackBuilder = TaskStackBuilder
+//                .create(context);
+//        stackBuilder.addParentStack(ReminderListActivity.class);
+//
+//
+//        // Adds the Intent that starts the Activity to the top of the stack
+//
+//
+//        stackBuilder.addNextIntent(resultIntent);
+//        PendingIntent resultPendingIntent = stackBuilder
+//                .getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
+//
+//        mBuilder.setContentIntent(resultPendingIntent);
+//        mNotificationManager = (NotificationManager) context
+//                .getSystemService(Context.NOTIFICATION_SERVICE);
+//
+//
+//        // notificationID allows you to update the notification later  on.
+//
+//
+//        mNotificationManager.notify(999, mBuilder.build());
+//        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//
+//        Intent notificationIntent = new Intent("android.media.action.DISPLAY_NOTIFICATION");
+//        notificationIntent.addCategory("android.intent.category.DEFAULT");
+//
+//        PendingIntent broadcast = PendingIntent.getBroadcast(this, 100, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+//
+//        Calendar cal = Calendar.getInstance();
+//        cal.add(Calendar.SECOND, 15);
+//        alarmManager.setExact(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), broadcast);
+    }
+
     @Override
     public int getItemViewType(int position) {
         return m_ActionItems.get(position).getType();
