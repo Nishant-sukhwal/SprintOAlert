@@ -71,6 +71,8 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
             storiesProgress = storiesProgress * 100;
             storiesProgress = Double.parseDouble(new DecimalFormat("##.##").format(storiesProgress));
         }
+
+        
         holder.txtStoriesProgress.setText(String.valueOf(storiesProgress) + "%");
         double bugsProgress = sprintInfo.getBugsSpentTime() / sprintInfo.getBugsTotalEffort();
         if (sprintInfo.getBugsSpentTime() == 0.0 && sprintInfo.getBugsTotalEffort() == 0.0) {
