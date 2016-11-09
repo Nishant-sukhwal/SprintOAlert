@@ -1,7 +1,14 @@
 package com.example.kiwi.tpprogresstracker.adapter;
 
+import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
+import android.os.SystemClock;
+import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,6 +21,7 @@ import android.widget.TextView;
 
 import com.example.kiwi.tpprogresstracker.R;
 import com.example.kiwi.tpprogresstracker.model.SprintInfo;
+import com.example.kiwi.tpprogresstracker.receiver.NotificationPublisher;
 import com.example.kiwi.tpprogresstracker.ui.ToDOList;
 
 import java.text.DecimalFormat;
@@ -72,7 +80,7 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
             storiesProgress = Double.parseDouble(new DecimalFormat("##.##").format(storiesProgress));
         }
 
-        
+
         holder.txtStoriesProgress.setText(String.valueOf(storiesProgress) + "%");
         double bugsProgress = sprintInfo.getBugsSpentTime() / sprintInfo.getBugsTotalEffort();
         if (sprintInfo.getBugsSpentTime() == 0.0 && sprintInfo.getBugsTotalEffort() == 0.0) {
@@ -199,7 +207,24 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
         });
         holder.imgEscalate.setTag(sprintInfo);
         holder.cvTodayLayout.setTag(sprintInfo);
-
+        if (sprintInfo.getTotalDaysOfSprint() == null || sprintInfo.getTotalDaysOfSprint() == "") {
+            sprintInfo.setTotalDaysOfSprint("/0");
+        }
+        if (sprintInfo.getCurrentDay() == null || sprintInfo.getCurrentDay() == "") {
+            sprintInfo.setCurrentDay("0");
+        }
+        int numberOfDays = Integer.valueOf(sprintInfo.getTotalDaysOfSprint().split("/")[1]);
+        int dayPercentage = (numberOfDays * 50) / 100;
+        if (Integer.parseInt(sprintInfo.getCurrentDay()) > dayPercentage) {
+            String projectName = sprintInfo.getProjectName();
+            String currentDay = sprintInfo.getCurrentDay() + sprintInfo.getTotalDaysOfSprint();
+            String bugsNotDone = holder.txtBugOpenCount.getText() + "/" + sprintInfo.getBugsCount();
+            String storiesNotDone = holder.txtStoriesOpenCount.getText() + "/" + sprintInfo.getStoriesCount();
+            scheduleNotification(getNotification(projectName, currentDay, bugsNotDone, storiesNotDone), 20000, sprintInfo.getProjectId());
+            PendingIntent pendingIntent = getPendingIntent(getNotification(projectName, currentDay, bugsNotDone, storiesNotDone), sprintInfo.getProjectId());
+            AlarmManager alarmManager = (AlarmManager) m_context.getSystemService(Context.ALARM_SERVICE);
+            //alarmManager.cancel(pendingIntent);
+        }
         //holder.cvTodayLayout.setCardBackgroundColor(m_SprintInfo.get(position).getCardBackgroundColor());
     }
 
@@ -276,4 +301,54 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
     public interface MyClickListener {
         public void onItemClick(int position, View v);
     }
+
+
+    @SuppressLint("ShortAlarm")
+    private void scheduleNotification(Notification notification, int delay, String notificationID) {
+
+        PendingIntent pendingIntent = getPendingIntent(notification, notificationID);
+
+        long futureInMillis = SystemClock.elapsedRealtime() + delay;
+        AlarmManager alarmManager = (AlarmManager) m_context.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.RTC_WAKEUP, futureInMillis, pendingIntent);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime(), delay, pendingIntent);
+    }
+
+    private PendingIntent getPendingIntent(Notification notification, String notificationID) {
+        Intent notificationIntent = new Intent(m_context, NotificationPublisher.class);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, notificationID);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
+        return PendingIntent.getBroadcast(m_context, Integer.valueOf(notificationID), notificationIntent, 0);
+    }
+
+    private Notification getNotification(String bigContentTitle, String day, String bugsNotDone, String storiesNotDone) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(m_context);
+        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+        inboxStyle.setBigContentTitle(bigContentTitle);
+        //inboxStyle.setSummaryText("(line.length) getBigText()");
+        inboxStyle.addLine("day : " + day);
+        inboxStyle.addLine("Bugs not done: " + bugsNotDone);
+        inboxStyle.addLine("stories not done: " + storiesNotDone);
+        builder.setAutoCancel(true);
+        builder.setSmallIcon(R.mipmap.kiwi_logo);
+        builder.setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            builder.setStyle(inboxStyle);
+        }
+//        builder.setContentIntent(pendingIntent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            builder.setPriority(Notification.PRIORITY_HIGH);
+        }
+//        builder.setOngoing(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            builder.build();
+        }
+
+//        Notification.Builder builder = new Notification.Builder(this);
+//        builder.setContentTitle("Scheduled Notification");
+//        builder.setContentText(content);
+//        builder.setSmallIcon(R.drawable.ic_launcher);
+        return builder.build();
+    }
+
 }

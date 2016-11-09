@@ -59,46 +59,6 @@ public class Dashboard extends AppCompatActivity implements internalCallback, On
         setContentView(R.layout.activity_dashboard);
         initViews();
         setSupportActionBar(mToolbar);
-        //scheduleNotification(getNotification(), 20000);
-//        AlarmManager alarmMgr;
-//        alarmMgr = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-//
-//        manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-//        Intent intent = new Intent("com.rj.notitfications.SECACTIVITY");
-//
-//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 1, intent, 0);
-//
-//        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-//        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
-//        inboxStyle.setBigContentTitle("SprintOAlert");
-//        //inboxStyle.setSummaryText("(line.length) getBigText()");
-//        inboxStyle.addLine("day : 10");
-//        inboxStyle.addLine("Bugs not done: 8/15");
-//        inboxStyle.addLine("stories not done: 10/20");
-//        builder.setAutoCancel(true);
-//        builder.setSmallIcon(R.mipmap.kiwi_logo);
-//        builder.setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//            builder.setStyle(inboxStyle);
-//        }
-//        builder.setContentIntent(pendingIntent);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//            builder.setPriority(Notification.PRIORITY_HIGH);
-//        }
-//        builder.setOngoing(true);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//            builder.build();
-//        }
-//// Set the alarm to start at 8:30 a.m.
-//        Calendar calendar = Calendar.getInstance();
-//        calendar.setTimeInMillis(System.currentTimeMillis());
-//        calendar.set(Calendar.HOUR_OF_DAY, 6);
-//        calendar.set(Calendar.MINUTE, 26);
-//        alarmMgr.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
-//                1000 * 20, pendingIntent);
-//        myNotication = builder.getNotification();
-//        manager.notify(11, myNotication);
-
         todayFragment = new TodayFragment();
         todayFragment.setSwipeRefreshListener(this);
         getSupportFragmentManager().beginTransaction().add(R.id.flContainer, todayFragment).commit();
@@ -106,12 +66,9 @@ public class Dashboard extends AppCompatActivity implements internalCallback, On
     }
 
     @SuppressLint("ShortAlarm")
-    private void scheduleNotification(Notification notification, int delay) {
+    private void scheduleNotification(Notification notification, int delay, String notificationID) {
 
-        Intent notificationIntent = new Intent(this, NotificationPublisher.class);
-        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, 1);
-        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = getPendingIntent(notification, notificationID);
 
         long futureInMillis = SystemClock.elapsedRealtime() + delay;
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
@@ -119,14 +76,21 @@ public class Dashboard extends AppCompatActivity implements internalCallback, On
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime(), 1000 * 10, pendingIntent);
     }
 
-    private Notification getNotification() {
+    private PendingIntent getPendingIntent(Notification notification, String notificationID) {
+        Intent notificationIntent = new Intent(this, NotificationPublisher.class);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, notificationID);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
+        return PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private Notification getNotification(String bigContentTitle, String day, String bugsNotDone, String storiesNotDone) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
-        inboxStyle.setBigContentTitle("SprintOAlert");
+        inboxStyle.setBigContentTitle(bigContentTitle);
         //inboxStyle.setSummaryText("(line.length) getBigText()");
-        inboxStyle.addLine("day : 10");
-        inboxStyle.addLine("Bugs not done: 8/15");
-        inboxStyle.addLine("stories not done: 10/20");
+        inboxStyle.addLine("day : " + day);
+        inboxStyle.addLine("Bugs not done: " + bugsNotDone);
+        inboxStyle.addLine("stories not done: " + storiesNotDone);
         builder.setAutoCancel(true);
         builder.setSmallIcon(R.mipmap.kiwi_logo);
         builder.setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS);
@@ -256,7 +220,17 @@ public class Dashboard extends AppCompatActivity implements internalCallback, On
                                 }
                                 String totalDaysOfSprint = "/" + String.valueOf(numberOfDays);
                                 projItem.setTotalDaysOfSprint(totalDaysOfSprint);
-
+//                                int dayPercentage = (numberOfDays * 50) / 100;
+//                                if (Integer.parseInt(projItem.getCurrentDay()) > dayPercentage) {
+//                                    String projectName = projItem.getProjectName();
+//                                    String currentDay = projItem.getCurrentDay() + totalDaysOfSprint;
+//                                    String bugsNotDone = item.getBugsCount() + "/" + projItem.getBugsCount();
+//                                    String storiesNotDone = projItem.getStoriesOpen() + "/" + projItem.getStoriesCount();
+//                                    scheduleNotification(getNotification(projectName, currentDay, bugsNotDone, storiesNotDone), 20000, projItem.getProjectId());
+//                                    PendingIntent pendingIntent = getPendingIntent(getNotification(projectName, currentDay, bugsNotDone, storiesNotDone), projItem.getProjectId());
+//                                    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//                                    alarmManager.cancel(pendingIntent);
+//                                }
                                 HashMap<String, String> storiesParams = new HashMap<>();
                                 storiesParams.put("id", item.getId());
                                 storiesParams.put("take", "1000");
