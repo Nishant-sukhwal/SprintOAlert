@@ -48,39 +48,46 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
 
     @Override
     public void onBindViewHolder(TodayListViewHolder holder, final int position) {
-        holder.txtProjectName.setText(m_SprintInfo.get(position).getProjectName());
-        holder.txtSprintName.setText(m_SprintInfo.get(position).getSprintName());
-        holder.txtStoriesCount.setText(m_SprintInfo.get(position).getStoriesCount());
-        holder.txtStoriesOpenCount.setText(String.valueOf(m_SprintInfo.get(position).getStoriesOpen() + m_SprintInfo.get(position).getStoriesInDevelopment() + m_SprintInfo.get(position).getStoriesInDesign()));
-        holder.txtStoriesInProgressCount.setText(String.valueOf(m_SprintInfo.get(position).getStoriesInTesting()));
-        holder.txtStoriesDone.setText(String.valueOf(m_SprintInfo.get(position).getStoriesDone()));
-        holder.txtBugCount.setText(m_SprintInfo.get(position).getBugsCount());
-        holder.txtBugOpenCount.setText(String.valueOf(m_SprintInfo.get(position).getBugsOpen() + m_SprintInfo.get(position).getBugsInDevelopment()));
-        holder.txtBugsInTesting.setText(String.valueOf(m_SprintInfo.get(position).getBugsInTesting()));
-        holder.txtBugsDone.setText(String.valueOf(m_SprintInfo.get(position).getBugsDone()));
-        holder.txtCurrentDay.setText(m_SprintInfo.get(position).getCurrentDay());
-        holder.txtTotalDaysOfSprint.setText(m_SprintInfo.get(position).getTotalDaysOfSprint());
-        double storiesProgress = m_SprintInfo.get(position).getStoriesSpentTime() / m_SprintInfo.get(position).getStoriesTotalEffort();
-        if (m_SprintInfo.get(position).getStoriesSpentTime() == 0.0 && m_SprintInfo.get(position).getStoriesTotalEffort() == 0.0) {
+        SprintInfo sprintInfo = m_SprintInfo.get(position);
+        holder.txtProjectName.setText(sprintInfo.getProjectName());
+        holder.txtSprintName.setText(sprintInfo.getSprintName());
+        holder.txtStoriesCount.setText(sprintInfo.getStoriesCount());
+        holder.txtStoriesOpenCount.setText(String.valueOf(sprintInfo.getStoriesOpen() + sprintInfo.getStoriesInDevelopment() + sprintInfo.getStoriesInDesign()));
+        holder.txtStoriesInProgressCount.setText(String.valueOf(sprintInfo.getStoriesInTesting()));
+        holder.txtStoriesDone.setText(String.valueOf(sprintInfo.getStoriesDone()));
+        holder.txtBugCount.setText(sprintInfo.getBugsCount());
+        holder.txtBugOpenCount.setText(String.valueOf(sprintInfo.getBugsOpen() + sprintInfo.getBugsInDevelopment()));
+        holder.txtBugsInTesting.setText(String.valueOf(sprintInfo.getBugsInTesting()));
+        holder.txtBugsDone.setText(String.valueOf(sprintInfo.getBugsDone()));
+        holder.txtCurrentDay.setText(sprintInfo.getCurrentDay());
+        holder.txtTotalDaysOfSprint.setText(sprintInfo.getTotalDaysOfSprint());
+        double storiesProgress = sprintInfo.getStoriesSpentTime() / sprintInfo.getStoriesTotalEffort();
+        if (sprintInfo.getStoriesSpentTime() == 0.0 && sprintInfo.getStoriesTotalEffort() == 0.0) {
             storiesProgress = 0;
         } else {
+            if (Double.isInfinite(storiesProgress)) {
+                storiesProgress = 0;
+            }
             storiesProgress = storiesProgress * 100;
             storiesProgress = Double.parseDouble(new DecimalFormat("##.##").format(storiesProgress));
         }
         holder.txtStoriesProgress.setText(String.valueOf(storiesProgress) + "%");
-        double bugsProgress = m_SprintInfo.get(position).getBugsSpentTime() / m_SprintInfo.get(position).getBugsTotalEffort();
-        if (m_SprintInfo.get(position).getBugsSpentTime() == 0.0 && m_SprintInfo.get(position).getBugsTotalEffort() == 0.0) {
+        double bugsProgress = sprintInfo.getBugsSpentTime() / sprintInfo.getBugsTotalEffort();
+        if (sprintInfo.getBugsSpentTime() == 0.0 && sprintInfo.getBugsTotalEffort() == 0.0) {
             bugsProgress = 0;
         } else {
+            if (Double.isInfinite(bugsProgress)) {
+                bugsProgress = 0;
+            }
             bugsProgress = bugsProgress * 100;
             bugsProgress = Double.parseDouble(new DecimalFormat("##.##").format(bugsProgress));
         }
         holder.txtBugsProgress.setText(String.valueOf(bugsProgress) + "%");
-        if (m_SprintInfo.get(position).getStoriesCount() == null) {
-            m_SprintInfo.get(position).setStoriesCount("0");
+        if (sprintInfo.getStoriesCount() == null) {
+            sprintInfo.setStoriesCount("0");
         }
-        if (m_SprintInfo.get(position).getCurrentDay() != null && m_SprintInfo.get(position).getTotalDaysOfSprint() != null) {
-            if (m_SprintInfo.get(position).getCurrentDay().equals(m_SprintInfo.get(position).getTotalDaysOfSprint().replace("/", ""))) {
+        if (sprintInfo.getCurrentDay() != null && sprintInfo.getTotalDaysOfSprint() != null) {
+            if (sprintInfo.getCurrentDay().equals(sprintInfo.getTotalDaysOfSprint().replace("/", ""))) {
                 holder.imgEscalate.setVisibility(View.VISIBLE);
                 holder.checkBoxSentToClient.setVisibility(View.VISIBLE);
             } else {
@@ -88,21 +95,21 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
                 holder.checkBoxSentToClient.setVisibility(View.GONE);
             }
         }
-        float fltOpenGraph = (m_SprintInfo.get(position).getStoriesOpen() + m_SprintInfo.get(position).getStoriesInDevelopment() + m_SprintInfo.get(position).getStoriesInDesign()) / Float.parseFloat(m_SprintInfo.get(position).getStoriesCount());
+        float fltOpenGraph = (sprintInfo.getStoriesOpen() + sprintInfo.getStoriesInDevelopment() + sprintInfo.getStoriesInDesign()) / Float.parseFloat(sprintInfo.getStoriesCount());
         if (Double.isNaN(fltOpenGraph)) {
             fltOpenGraph = 0;
         }
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, 100);
         lp.weight = fltOpenGraph;
         holder.layoutStoryOpenGraph.setLayoutParams(lp);
-        float fltInTestingGraph = (m_SprintInfo.get(position).getStoriesInTesting()) / Float.parseFloat(m_SprintInfo.get(position).getStoriesCount());
+        float fltInTestingGraph = (sprintInfo.getStoriesInTesting()) / Float.parseFloat(sprintInfo.getStoriesCount());
         if (Double.isNaN(fltInTestingGraph)) {
             fltInTestingGraph = 0;
         }
         LinearLayout.LayoutParams lpInTestingGraph = new LinearLayout.LayoutParams(0, 100);
         lpInTestingGraph.weight = fltInTestingGraph;
         holder.layoutStoryInProgressGraph.setLayoutParams(lpInTestingGraph);
-        float fltStoryDoneGraph = (float) m_SprintInfo.get(position).getStoriesDone() / Float.parseFloat(m_SprintInfo.get(position).getStoriesCount());
+        float fltStoryDoneGraph = (float) sprintInfo.getStoriesDone() / Float.parseFloat(sprintInfo.getStoriesCount());
         if (Double.isNaN(fltStoryDoneGraph)) {
             fltStoryDoneGraph = 0;
         }
@@ -110,28 +117,28 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
         lpDoneGraph.weight = fltStoryDoneGraph;
         holder.layoutStoryDoneGraph.setLayoutParams(lpDoneGraph);
 
-        if (m_SprintInfo.get(position).getBugsCount() == null) {
-            m_SprintInfo.get(position).setBugsCount("0");
+        if (sprintInfo.getBugsCount() == null) {
+            sprintInfo.setBugsCount("0");
         }
-        float fBugsOpenGraph = (m_SprintInfo.get(position).getBugsOpen() + m_SprintInfo.get(position).getBugsInDevelopment()) / Float.parseFloat(m_SprintInfo.get(position).getBugsCount());
+        float fBugsOpenGraph = (sprintInfo.getBugsOpen() + sprintInfo.getBugsInDevelopment()) / Float.parseFloat(sprintInfo.getBugsCount());
         if (Double.isNaN(fBugsOpenGraph)) {
             fBugsOpenGraph = 0;
         }
         LinearLayout.LayoutParams lpOpenBugs = new LinearLayout.LayoutParams(0, 100);
         lpOpenBugs.weight = fBugsOpenGraph;
         holder.layoutBugsOpenGraph.setLayoutParams(lpOpenBugs);
-        float fBugsInTestingGraph = (m_SprintInfo.get(position).getBugsInTesting()) / Float.parseFloat(m_SprintInfo.get(position).getBugsCount());
+        float fBugsInTestingGraph = (sprintInfo.getBugsInTesting()) / Float.parseFloat(sprintInfo.getBugsCount());
         if (Double.isNaN(fBugsInTestingGraph)) {
             fBugsInTestingGraph = 0;
         }
-        if (m_SprintInfo.get(position).getBugsInTesting() == 0 && Float.parseFloat(m_SprintInfo.get(position).getBugsCount()) == 0) {
+        if (sprintInfo.getBugsInTesting() == 0 && Float.parseFloat(sprintInfo.getBugsCount()) == 0) {
             fBugsInTestingGraph = 0;
         }
         LinearLayout.LayoutParams lpBugsInTestingGraph = new LinearLayout.LayoutParams(0, 100);
         lpBugsInTestingGraph.weight = fBugsInTestingGraph;
         holder.layoutBugsInTestingGraph.setLayoutParams(lpBugsInTestingGraph);
 
-        float fBugsDoneGraph = (float) m_SprintInfo.get(position).getBugsDone() / Float.parseFloat(m_SprintInfo.get(position).getBugsCount());
+        float fBugsDoneGraph = (float) sprintInfo.getBugsDone() / Float.parseFloat(sprintInfo.getBugsCount());
         if (Double.isNaN(fBugsDoneGraph)) {
             fBugsDoneGraph = 0;
         }
@@ -151,21 +158,21 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
         holder.layoutOverallDoneGraph.setLayoutParams(lpOverallDoneGraph);
 
 
-        if (m_SprintInfo.get(position).getSprintStartDate() != null && m_SprintInfo.get(position).getSprintStartDate() > 0) {
-            Date date = new Date(m_SprintInfo.get(position).getSprintStartDate());
+        if (sprintInfo.getSprintStartDate() != null && sprintInfo.getSprintStartDate() > 0) {
+            Date date = new Date(sprintInfo.getSprintStartDate());
             Format format = new SimpleDateFormat("dd/MM/yyyy");
             holder.txtStartDate.setText(format.format(date));
         } else {
             holder.txtStartDate.setText(null);
         }
-        if (m_SprintInfo.get(position).getSprintEndDate() != null && m_SprintInfo.get(position).getSprintEndDate() > 0) {
-            Date date = new Date(m_SprintInfo.get(position).getSprintEndDate());
+        if (sprintInfo.getSprintEndDate() != null && sprintInfo.getSprintEndDate() > 0) {
+            Date date = new Date(sprintInfo.getSprintEndDate());
             Format format = new SimpleDateFormat("dd/MM/yyyy");
             holder.txtEndDate.setText(format.format(date));
         } else {
             holder.txtEndDate.setText(null);
         }
-        holder.imgSendMail.setTag(m_SprintInfo.get(position));
+        holder.imgSendMail.setTag(sprintInfo);
         holder.imgToDo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -176,7 +183,7 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
                 m_context.startActivity(intent);
             }
         });
-        holder.checkBoxSentToClient.setChecked(m_SprintInfo.get(position).isBuildSentToClient());
+        holder.checkBoxSentToClient.setChecked(sprintInfo.isBuildSentToClient());
         holder.checkBoxSentToClient.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -188,8 +195,8 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
                 }
             }
         });
-        holder.imgEscalate.setTag(m_SprintInfo.get(position));
-        holder.cvTodayLayout.setTag(m_SprintInfo.get(position));
+        holder.imgEscalate.setTag(sprintInfo);
+        holder.cvTodayLayout.setTag(sprintInfo);
 
         //holder.cvTodayLayout.setCardBackgroundColor(m_SprintInfo.get(position).getCardBackgroundColor());
     }

@@ -59,7 +59,7 @@ public class Dashboard extends AppCompatActivity implements internalCallback, On
         setContentView(R.layout.activity_dashboard);
         initViews();
         setSupportActionBar(mToolbar);
-        scheduleNotification(getNotification(), 20000);
+        //scheduleNotification(getNotification(), 20000);
 //        AlarmManager alarmMgr;
 //        alarmMgr = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
 //

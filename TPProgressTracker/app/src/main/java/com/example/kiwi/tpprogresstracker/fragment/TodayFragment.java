@@ -199,8 +199,12 @@ public class TodayFragment extends Fragment {
                 HeaderItem item = (HeaderItem) items;
                 stringBuilder.append("<br/><b>day " + item.getDay() + "</b><br/>");
             } else {
+                String actionItem = "No Action taken";
                 InnerActionItems innerActionItems = (InnerActionItems) items;
-                stringBuilder.append("&#8226; <small>" + innerActionItems.getItem() + "</small><br/>");
+                if (!innerActionItems.getItem().equals("Action to be taken")) {
+                    actionItem = innerActionItems.getItem();
+                }
+                stringBuilder.append("&#8226; <small>" + actionItem + "</small><br/>");
             }
         }
         final Intent emailIntent1 = new Intent(Intent.ACTION_SEND);
@@ -211,6 +215,8 @@ public class TodayFragment extends Fragment {
         if (mFile != null) {
             emailIntent1.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + mFile.getAbsolutePath()));
         }
+//        emailIntent1.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + getActivity().getFileStreamPath("snapshot.png")));
+
         emailIntent1.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         emailIntent1.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         emailIntent1.setType("image/*");
@@ -288,19 +294,19 @@ public class TodayFragment extends Fragment {
 
     private File savebitmap(Bitmap bmp) {
 
-//        String extStorageDirectory = Environment.getExternalStorageDirectory().toString();
-        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-
+        String temp = "SplashItShare";
+        String extStorageDirectory = Environment.getExternalStorageDirectory().toString();
         OutputStream outStream = null;
-        File file = new File(path + "/SprintOAlert/", "snapshot.png");
-
+        String path = Environment.getExternalStorageDirectory()
+                .toString();
+        new File(path + "/SplashItTemp").mkdirs();
+        File file = new File(path + "/SplashItTemp", temp + ".png");
         if (file.exists()) {
             file.delete();
-            file = new File(path + "/SprintOAlert/", "snapshot.png");
+            file = new File(path + "/SplashItTemp", temp + ".png");
         }
+
         try {
-            file.mkdirs();
-            file.createNewFile();
             outStream = new FileOutputStream(file);
             bmp.compress(Bitmap.CompressFormat.PNG, 100, outStream);
             outStream.flush();
