@@ -190,6 +190,7 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
                 Intent intent = new Intent(m_context, ToDOList.class);
                 intent.putExtra("day", info.getCurrentDay());
                 intent.putExtra("project_id", info.getProjectId());
+                intent.putExtra("project_name", info.getProjectName());
                 m_context.startActivity(intent);
             }
         });
@@ -213,18 +214,18 @@ public class TodayListAdapter extends RecyclerView.Adapter<TodayListAdapter.Toda
         if (sprintInfo.getCurrentDay() == null || sprintInfo.getCurrentDay() == "") {
             sprintInfo.setCurrentDay("0");
         }
-        int numberOfDays = Integer.valueOf(sprintInfo.getTotalDaysOfSprint().split("/")[1]);
-        int dayPercentage = (numberOfDays * 50) / 100;
-        if (Integer.parseInt(sprintInfo.getCurrentDay()) > dayPercentage) {
-            String projectName = sprintInfo.getProjectName();
-            String currentDay = sprintInfo.getCurrentDay() + sprintInfo.getTotalDaysOfSprint();
-            String bugsNotDone = holder.txtBugOpenCount.getText() + "/" + sprintInfo.getBugsCount();
-            String storiesNotDone = holder.txtStoriesOpenCount.getText() + "/" + sprintInfo.getStoriesCount();
-            scheduleNotification(getNotification(projectName, currentDay, bugsNotDone, storiesNotDone), 20000, sprintInfo.getProjectId());
-            PendingIntent pendingIntent = getPendingIntent(getNotification(projectName, currentDay, bugsNotDone, storiesNotDone), sprintInfo.getProjectId());
-            AlarmManager alarmManager = (AlarmManager) m_context.getSystemService(Context.ALARM_SERVICE);
-            //alarmManager.cancel(pendingIntent);
-        }
+//        int numberOfDays = Integer.valueOf(sprintInfo.getTotalDaysOfSprint().split("/")[1]);
+//        int dayPercentage = (numberOfDays * 50) / 100;
+//        if (Integer.parseInt(sprintInfo.getCurrentDay()) > dayPercentage) {
+//            String projectName = sprintInfo.getProjectName();
+//            String currentDay = sprintInfo.getCurrentDay() + sprintInfo.getTotalDaysOfSprint();
+//            String bugsNotDone = holder.txtBugOpenCount.getText() + "/" + sprintInfo.getBugsCount();
+//            String storiesNotDone = holder.txtStoriesOpenCount.getText() + "/" + sprintInfo.getStoriesCount();
+//            scheduleNotification(getNotification(projectName, currentDay, bugsNotDone, storiesNotDone), 20000, sprintInfo.getProjectId());
+//            PendingIntent pendingIntent = getPendingIntent(getNotification(projectName, currentDay, bugsNotDone, storiesNotDone), sprintInfo.getProjectId());
+//            AlarmManager alarmManager = (AlarmManager) m_context.getSystemService(Context.ALARM_SERVICE);
+//            //alarmManager.cancel(pendingIntent);
+//        }
         //holder.cvTodayLayout.setCardBackgroundColor(m_SprintInfo.get(position).getCardBackgroundColor());
     }
 

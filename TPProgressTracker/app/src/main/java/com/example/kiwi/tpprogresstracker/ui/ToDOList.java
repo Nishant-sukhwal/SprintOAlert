@@ -1,17 +1,29 @@
 package com.example.kiwi.tpprogresstracker.ui;
 
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.app.TimePickerDialog;
+import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.example.kiwi.tpprogresstracker.R;
 import com.example.kiwi.tpprogresstracker.adapter.ActionItemAdapter;
@@ -20,24 +32,38 @@ import com.example.kiwi.tpprogresstracker.database.DBTableStructure;
 import com.example.kiwi.tpprogresstracker.model.HeaderItem;
 import com.example.kiwi.tpprogresstracker.model.InnerActionItems;
 import com.example.kiwi.tpprogresstracker.model.ListItem;
+import com.example.kiwi.tpprogresstracker.receiver.NotificationPublisher;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.TreeMap;
 //import static com.example.kiwi.tpprogresstracker.model.ActionItemInfo.actionListItems;
 
 public class ToDOList extends AppCompatActivity {
 
+    private static final String TAG = "AlarmManager Result";
     RecyclerView rvActionItem;
     ActionItemAdapter actionItemAdapter;
-    String currentDay, projectID;
+    String currentDay, projectID, projectName;
     private ProgressDialog m_ProgressBar;
     FloatingActionButton fab;
     public ArrayList<InnerActionItems> actionItems = new ArrayList<>();
     public ArrayList<ListItem> actionListItems = new ArrayList<>();
+    private int mHour, mMinute;
+    int time = 0;
+    long mSelectedMiliSeconds;
+    int mSecond;
+    int mMin;
+    int mHours;
+    boolean isFalse;
+    long mFinalValue;
+    String itemIDForAlaram, itemDescForAlaram;
+    int dayForAlaram;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,6 +152,7 @@ public class ToDOList extends AppCompatActivity {
             Intent intent = getIntent();
             currentDay = intent.getStringExtra("day");
             projectID = intent.getStringExtra("project_id");
+            projectName = intent.getStringExtra("project_name");
             String[] args = new String[]{projectID};
             Cursor cursor = DBManager.getInstance(ToDOList.this).fetchData(null, DBTableStructure.ActionItemsTable.KEY_PROJECT_ID + "=?", args, null, null, null);
             if (cursor.getCount() > 0) {
@@ -178,6 +205,7 @@ public class ToDOList extends AppCompatActivity {
             CreateConsolidateList();
 
             actionItemAdapter.setOnItemClickListener(new ActionItemAdapter.ActionItemClickListener() {
+
                 @Override
                 public void onItemClick(int position, View v) {
                     if (v.getId() == R.id.imgMinus) {
@@ -214,6 +242,27 @@ public class ToDOList extends AppCompatActivity {
                             long isInserted = DBManager.getInstance(getApplicationContext()).insert(contentValues);
                         }
                         actionItemAdapter.notifyDataSetChanged();
+                    } else if (v.getId() == R.id.imgAlarmClock) {
+//                        addReminderInCalendar();
+                        itemIDForAlaram = ((InnerActionItems) actionListItems.get(position)).getId();
+                        dayForAlaram = ((InnerActionItems) actionListItems.get(position)).getDay();
+                        itemDescForAlaram = ((InnerActionItems) actionListItems.get(position)).getItem();
+                        final Calendar c = Calendar.getInstance();
+                        mHour = c.get(Calendar.HOUR_OF_DAY);
+                        mMinute = c.get(Calendar.MINUTE);
+                        // Launch Time Picker Dialog
+                        TimePickerDialog timePickerDialog = new TimePickerDialog(ToDOList.this, new TimePickerDialog.OnTimeSetListener() {
+                            @Override
+                            public void onTimeSet(TimePicker timePicker, int i, int i1) {
+                                mHour = i;
+                                mMinute = i1;
+                                int requestCode = Integer.valueOf(dayForAlaram + itemIDForAlaram);
+                                convertTimeInMillisecond(i, i1, requestCode, itemDescForAlaram);
+                                // textView.setText( currentTime() + " --- " + i + " : " + i1);
+                            }
+                        }, mHour, mMinute, false);
+
+                        timePickerDialog.show();
                     }
                 }
             });
@@ -234,6 +283,150 @@ public class ToDOList extends AppCompatActivity {
             m_ProgressBar.dismiss();
         }
 
+    }
+
+    private void convertTimeInMillisecond(final int hour, final int minute, final int requestCode, final String title) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, hour);
+        cal.set(Calendar.MINUTE, minute);
+        cal.setTimeZone(TimeZone.getDefault());
+        mSelectedMiliSeconds = cal.getTimeInMillis();
+
+        //checking if alram is working with pendingIntent
+        Intent intent = new Intent(getApplicationContext(), NotificationPublisher.class);//the same as up
+        intent.setData(Uri.parse("custom://" + requestCode));
+        intent.putExtra(NotificationPublisher.NOTIFICATION_ID, String.valueOf(requestCode));
+        intent.putExtra(NotificationPublisher.NOTIFICATION, getNotification(title, "", "", ""));
+        intent.setAction(String.valueOf(requestCode));//the same as up
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        //and stopping
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), requestCode, intent, 0);
+        if (pendingIntent != null) {
+            alarmManager.cancel(pendingIntent);//important
+            //pendingIntent.cancel();
+        }
+
+//        Intent alarmIntent = new Intent(ToDOList.this, NotificationPublisher.class);
+//        pendingIntent = PendingIntent.getBroadcast(ToDOList.this, requestCode, alarmIntent, 0);
+        System.out.println("difference --" + mSelectedMiliSeconds + "---" + System.currentTimeMillis());
+        alarmManager.set(AlarmManager.RTC_WAKEUP, mSelectedMiliSeconds, pendingIntent);
+        //countDown();
+    }
+
+    private Notification getNotification(String bigContentTitle, String day, String bugsNotDone, String storiesNotDone) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+//        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+//        inboxStyle.setBigContentTitle(bigContentTitle);
+        //inboxStyle.setSummaryText("(line.length) getBigText()");
+//        inboxStyle.addLine("day : " + day);
+//        inboxStyle.addLine("Bugs not done: " + bugsNotDone);
+//        inboxStyle.addLine("stories not done: " + storiesNotDone);
+        builder.setContentTitle(projectName)
+                .setContentText(bigContentTitle);
+        builder.setAutoCancel(true);
+        builder.setSmallIcon(R.mipmap.kiwi_logo);
+        builder.setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//            builder.setStyle(inboxStyle);
+        }
+//        builder.setContentIntent(pendingIntent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            builder.setPriority(Notification.PRIORITY_HIGH);
+        }
+//        builder.setOngoing(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            builder.build();
+        }
+
+//        Notification.Builder builder = new Notification.Builder(this);
+//        builder.setContentTitle("Scheduled Notification");
+//        builder.setContentText(content);
+//        builder.setSmallIcon(R.drawable.ic_launcher);
+        return builder.build();
+    }
+
+    private void countDown() {
+        isFalse = true;
+        mFinalValue = (mSelectedMiliSeconds - System.currentTimeMillis()) / 1000;
+        System.out.println("difference --" + mFinalValue);
+        Thread countDown = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (isFalse) {
+                    try {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (mFinalValue != 0) {
+                                    mFinalValue = mFinalValue - 1;
+                                    //textView.setText("" + mFinalValue);
+                                } else {
+                                    isFalse = false;
+                                }
+                            }
+                        });
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        countDown.start();
+    }
+
+    /**
+     * Adds Events and Reminders in Calendar.
+     */
+    private void addReminderInCalendar() {
+        Calendar cal = Calendar.getInstance();
+        Uri EVENTS_URI = Uri.parse(getCalendarUriBase(true) + "events");
+        ContentResolver cr = getContentResolver();
+        TimeZone timeZone = TimeZone.getDefault();
+
+        /** Inserting an event in calendar. */
+        ContentValues values = new ContentValues();
+        values.put(CalendarContract.Events.CALENDAR_ID, 1);
+        values.put(CalendarContract.Events.TITLE, "Nishant Reminder 01");
+        values.put(CalendarContract.Events.DESCRIPTION, "A test Reminder.");
+        values.put(CalendarContract.Events.ALL_DAY, 1);
+        // event starts at 11 minutes from now
+        values.put(CalendarContract.Events.DTSTART, cal.getTimeInMillis() + 20 * 1000);
+        // ends 60 minutes from now
+        values.put(CalendarContract.Events.DTEND, cal.getTimeInMillis() + 60 * 1000);
+        values.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
+        values.put(CalendarContract.Events.HAS_ALARM, 1);
+        Uri event = cr.insert(EVENTS_URI, values);
+
+        // Display event id.
+        Toast.makeText(getApplicationContext(), "Event added :: ID :: " + event.getLastPathSegment(), Toast.LENGTH_SHORT).show();
+
+        /** Adding reminder for event added. */
+        Uri REMINDERS_URI = Uri.parse(getCalendarUriBase(true) + "reminders");
+        values = new ContentValues();
+        values.put(CalendarContract.Reminders.EVENT_ID, Long.parseLong(event.getLastPathSegment()));
+        values.put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT);
+        values.put(CalendarContract.Reminders.MINUTES, 10);
+        cr.insert(REMINDERS_URI, values);
+    }
+
+    /**
+     * Returns Calendar Base URI, supports both new and old OS.
+     */
+    private String getCalendarUriBase(boolean eventUri) {
+        Uri calendarURI = null;
+        try {
+            if (android.os.Build.VERSION.SDK_INT <= 7) {
+                calendarURI = (eventUri) ? Uri.parse("content://calendar/") : Uri.parse("content://calendar/calendars");
+            } else {
+                calendarURI = (eventUri) ? Uri.parse("content://com.android.calendar/") : Uri
+                        .parse("content://com.android.calendar/calendars");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return calendarURI.toString();
     }
 
     private void CreateConsolidateList() {

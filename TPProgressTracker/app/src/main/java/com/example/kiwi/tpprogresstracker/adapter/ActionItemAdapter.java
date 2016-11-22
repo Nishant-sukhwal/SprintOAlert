@@ -71,21 +71,25 @@ public class ActionItemAdapter extends RecyclerView.Adapter<ActionItemAdapter.Ac
             if (!items.isCurrent()) {
                 childView.txtActionItem.setEnabled(false);
                 childView.viewSeperator.setVisibility(View.GONE);
+                childView.viewSeperator1.setVisibility(View.GONE);
                 childView.imgMinus.setVisibility(View.GONE);
+                childView.imgAlarmClock.setVisibility(View.GONE);
             } else {
                 childView.txtActionItem.setEnabled(true);
                 childView.viewSeperator.setVisibility(View.VISIBLE);
+                childView.viewSeperator1.setVisibility(View.VISIBLE);
                 childView.imgMinus.setVisibility(View.VISIBLE);
+                childView.imgAlarmClock.setVisibility(View.VISIBLE);
             }
             childView.imgMinus.setTag(m_ActionItems.get(position));
+            childView.imgAlarmClock.setTag(m_ActionItems.get(position));
             childView.myCustomEditTextListener.updatePosition(holder.getAdapterPosition());
             childView.txtActionItem.setText(items.getItem());
             Log.d(TAG, "onBindViewHolder: holder.getAdapterPosition() : " + holder.getAdapterPosition() + " position : " + position);
         }
     }
 
-    private void createLocalNotification(Context context)
-    {
+    private void createLocalNotification(Context context) {
 //        Intent notificationIntent = new Intent(context,
 //                ReminderListActivity.class);
 //
@@ -208,8 +212,8 @@ public class ActionItemAdapter extends RecyclerView.Adapter<ActionItemAdapter.Ac
 
     public class ChildItem extends ActionItemViewHolder {
         EditText txtActionItem;
-        View viewSeperator;
-        ImageView imgMinus;
+        View viewSeperator, viewSeperator1;
+        ImageView imgMinus, imgAlarmClock;
         MyCustomEditTextListener myCustomEditTextListener;
 
         public ChildItem(final View itemView, MyCustomEditTextListener myCustomEditTextListener) {
@@ -217,8 +221,11 @@ public class ActionItemAdapter extends RecyclerView.Adapter<ActionItemAdapter.Ac
             this.myCustomEditTextListener = myCustomEditTextListener;
             txtActionItem = (EditText) itemView.findViewById(R.id.txtActionItem);
             viewSeperator = (View) itemView.findViewById(R.id.viewSeperator);
+            viewSeperator1 = (View) itemView.findViewById(R.id.viewSeperator1);
             imgMinus = (ImageView) itemView.findViewById(R.id.imgMinus);
             imgMinus.setOnClickListener(this);
+            imgAlarmClock = (ImageView) itemView.findViewById(R.id.imgAlarmClock);
+            imgAlarmClock.setOnClickListener(this);
             txtActionItem.addTextChangedListener(myCustomEditTextListener);
         }
     }

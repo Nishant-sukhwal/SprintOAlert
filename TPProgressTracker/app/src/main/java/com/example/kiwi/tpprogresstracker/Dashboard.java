@@ -7,6 +7,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -14,10 +15,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.FrameLayout;
 
 import com.example.kiwi.tpprogresstracker.adapter.DashboardPagerAdapter;
@@ -63,6 +67,49 @@ public class Dashboard extends AppCompatActivity implements internalCallback, On
         todayFragment.setSwipeRefreshListener(this);
         getSupportFragmentManager().beginTransaction().add(R.id.flContainer, todayFragment).commit();
         onRefreshList();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_item, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
+        builder1.setMessage("Do you want to logout?");
+        builder1.setCancelable(true);
+
+        builder1.setPositiveButton(
+                "Yes",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                        clear();
+                        startActivity(new Intent(Dashboard.this, MainActivity.class));
+                        Dashboard.this.finish();
+                    }
+                });
+
+        builder1.setNegativeButton(
+                "No",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert11 = builder1.create();
+        alert11.show();
+        return true;
+    }
+
+    public void clear() {
+        SharedPreferences prefs = getSharedPreferences(MyPreference, MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.clear();
+        editor.apply();
     }
 
     @SuppressLint("ShortAlarm")
@@ -122,7 +169,6 @@ public class Dashboard extends AppCompatActivity implements internalCallback, On
         ProjectInfo.listProjectInfo.clear();
         apihandler.getInstance().callAPI("fetchProjects", null, mToken, params, this);
     }
-
 
     private void initViews() {
         mToolbar = (Toolbar) findViewById(R.id.toolbar);

@@ -25,6 +25,29 @@
             android:background="#00000000"
             android:paddingLeft="@dimen/margin_small"
             android:textColor="#3C3C3C" />
+        <View
+            android:id="@+id/viewSeperator1"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/darker_gray" />
+
+        <ImageView
+            android:id="@+id/imgAlarmClock"
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:layout_marginLeft="@dimen/margin_small"
+            android:layout_marginRight="@dimen/margin_small"
+            android:layout_marginTop="6dp"
+            android:src="@mipmap/alarmclock64" />
+
+        <TextView
+            android:id="@+id/alarmText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text=""
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <View
             android:id="@+id/viewSeperator"
